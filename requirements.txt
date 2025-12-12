@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+jinja2
+python-multipart
+starlette
+requests
+websocket-client
+python-binance
+cryptography

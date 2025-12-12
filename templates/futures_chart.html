@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Futures Trading | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Custom Styles -->
+  <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+
+    /* ================================================================== */
+    /* Z-INDEX HIERARCHY – BULLETPROOF */
+    /* ================================================================== */
+    /* Mobile sidebar – highest priority */
+    #mobile-sidebar {
+        z-index: 99999 !important;
+    }
+
+    /* Notification toast */
+    .fixed.top-20.right-4.glass-dark,
+    div[class*="translate-x-full"] {
+        z-index: 99990 !important;
+    }
+
+    /* Bottom mobile nav */
+    .fixed.bottom-0.glass {
+        z-index: 9980;
+    }
+
+    /* Top fixed navbar */
+    nav.glass.fixed {
+        z-index: 9970;
+    }
+
+    /* ================================================================== */
+    /* MOBILE HEADER FIX – NEVER HIDDEN UNDER NAVBAR */
+    /* ================================================================== */
+    main {
+        padding-top: 180px; /* Default safe */
+    }
+
+    /* Tablet & larger phones */
+    @media (max-width: 1024px) {
+        main {
+            padding-top: 200px !important;
+        }
+    }
+
+    /* Small phones – super aggressive push-down */
+    @media (max-width: 640px) {
+        main {
+            padding-top: 220px !important;   /* ← This pushes the BTC price header way below the nav */
+        }
+    }
+
+    /* Extra safety for iPhone with notch / dynamic island / foldables */
+    @media (max-width: 480px), (max-height: 700px) {
+        main {
+            padding-top: 240px !important;
+        }
+    }
+
+    /* Optional: add bottom padding so content isn't hidden under mobile bottom bar */
+    @media (max-width: 1024px) {
+        main {
+            padding-bottom: 100px !important;
+        }
+    }
+
+    /* ================================================================== */
+    /* Your original animations & styles (unchanged) */
+    /* ================================================================== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInLeft { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse-subtle { 0%,100%{opacity:1} 50%{opacity:.8} }
+
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-in-left { animation: slideInLeft 0.4s ease-out forwards; }
+    .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+
+    .glass {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .glass-dark {
+        background: rgba(15,23,42,0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(59,130,246,.5) rgba(255,255,255,.05); }
+    .custom-scrollbar::-webkit-scrollbar { width:6px; height:6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background:rgba(255,255,255,.05); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background:rgba(59,130,246,.5); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:rgba(59,130,246,.8); }
+
+    .gradient-text {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .chart-container {
+        height: 500px;
+        position: relative;
+    }
+    @media (max-height:800px) { .chart-container{height:400px} }
+    @media (max-height:600px) { .chart-container{height:300px} }
+    @media (max-width:768px) { .chart-container{height:350px} }
+    @media (max-width:640px) { .chart-container{height:280px} }
+    @media (max-width:480px) { .chart-container{height:250px} }
+
+    .price-up { color:#10b981; background:rgba(16,185,129,0.1); }
+    .price-down { color:#ef4444; background:rgba(239,68,68,0.1); }
+
+    .badge { display:inline-flex; align-items:center; padding:.25rem .75rem; border-radius:9999px; font-size:.75rem; font-weight:600; }
+    .badge-success { background:rgba(16,185,129,.1); color:#10b981; }
+    .badge-warning { background:rgba(245,158,11,.1); color:#f59e0b; }
+    .badge-danger { background:rgba(239,68,68,.1); color:#ef4444; }
+
+    .trading-btn {
+        padding:.5rem 1.5rem; border-radius:.5rem; font-weight:500;
+        transition:all .2s; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .trading-btn-primary {
+        background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white;
+    }
+    .trading-btn-primary:hover {
+        background:linear-gradient(135deg,#1d4ed8,#1e40af);
+        transform:translateY(-2px); box-shadow:0 10px 25px rgba(59,130,246,.3);
+    }
+    .trading-btn-secondary {
+        background:rgba(255,255,255,.05); color:#f8fafc;
+        border:1px solid rgba(255,255,255,.1);
+    }
+    .trading-btn-secondary:hover {
+        background:rgba(255,255,255,.1); transform:translateY(-2px);
+    }
+
+    .timeframe-btn, .chart-type-btn, .order-type-btn {
+        padding:.375rem .75rem; border-radius:.375rem; font-size:.875rem;
+        transition:all .2s; background:rgba(255,255,255,.05); color:#f8fafc;
+        border:1px solid rgba(255,255,255,.1);
+    }
+    .timeframe-btn.active, .chart-type-btn.active, .order-type-btn.active {
+        background:rgba(59,130,246,.2); color:#3b82f6; border-color:rgba(59,130,246,.3);
+    }
+
+    .crosshair-info { position:absolute; top:20px; left:20px; z-index:10; pointer-events:none; }
+    body { background-color:#0f172a; color:#f8fafc; overflow-x:hidden; }
+
+    .chart-loading {
+        position:absolute; top:0; left:0; right:0; bottom:0;
+        background:rgba(15,23,42,0.8); display:flex; align-items:center;
+        justify-content:center; z-index:20; border-radius:.75rem;
+    }
+
+    .position-line { position:absolute; width:100%; height:2px; background:rgba(59,130,246,0.5); z-index:5; pointer-events:none; }
+    .position-label { position:absolute; padding:2px 8px; border-radius:4px; font-size:.75rem; font-weight:500; z-index:6; pointer-events:none; background:rgba(15,23,42,0.9); border:1px solid rgba(59,130,246,0.3); }
+
+    .leverage-slider {
+        -webkit-appearance:none; width:100%; height:4px; background:rgba(255,255,255,0.1);
+        border-radius:2px; outline:none;
+    }
+    .leverage-slider::-webkit-slider-thumb {
+        -webkit-appearance:none; width:18px; height:18px; background:#3b82f6;
+        border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,0.2);
+    }
+
+    .funding-timer { font-family:'Courier New',monospace; font-weight:bold; letter-spacing:1px; }
+
+    .futures-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:1rem; }
+    @media (max-width:1024px) { .futures-grid{grid-template-columns:1fr} .tablet-full{grid-column:1/-1 !important} }
+    @media (max-width:640px) { .mobile-full{width:100% !important} .mobile-hidden{display:none !important} .mobile-show{display:block !important} }
+
+    .educational-tip { border-left:3px solid #3b82f6; background:rgba(59,130,246,0.05); }
+    .liquidation-warning { animation:pulse-subtle 1.5s ease-in-out infinite; border:1px solid rgba(239,68,68,0.3); }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="dashboard.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="dashboard.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="balances.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="#chart" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Futures
+                    </a>
+                    <a href="chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Charts
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Center: Symbol Selector -->
+            <div class="flex-1 max-w-md mx-4 hidden lg:block">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                            <i class="fab fa-bitcoin text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">BTC/USDT</div>
+                            <div class="text-sm text-gray-400">Perpetual</div>
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        <select id="symbol-selector" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-2 px-4 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <option value="BTCUSDT">BTC/USDT</option>
+                            <option value="ETHUSDT">ETH/USDT</option>
+                            <option value="SOLUSDT">SOL/USDT</option>
+                            <option value="ADAUSDT">ADA/USDT</option>
+                            <option value="DOTUSDT">DOT/USDT</option>
+                            <option value="AVAXUSDT">AVAX/USDT</option>
+                            <option value="LINKUSDT">LINK/USDT</option>
+                            <option value="DOGEUSDT">DOGE/USDT</option>
+                        </select>
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: User & Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Switch to Spot -->
+                <a href="chart.html" class="hidden md:flex items-center trading-btn trading-btn-secondary text-sm">
+                    <i class="fas fa-exchange-alt mr-2"></i> Spot Chart
+                </a>
+                
+                <!-- User Profile -->
+                <div class="relative">
+                    <a href="profile.html" class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                            <span class="font-bold">DT</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">Demo Trader</div>
+                            <div class="text-xs text-gray-400">Professional</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Symbol Selector -->
+        <div class="mt-3 lg:hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                        <i class="fab fa-bitcoin text-white"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold">BTC/USDT</div>
+                        <div class="text-sm text-gray-400">Perpetual • 1h Chart</div>
+                    </div>
+                </div>
+                <button id="mobile-symbol-selector" class="text-blue-400 hover:text-blue-300">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            <div class="p-6 border-b border-gray-800">
+                <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button><br>
+                <div class="flex items-center justify-between">
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="balances.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="#chart" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-chart-candlestick w-5"></i>
+                        <span>Futures</span>
+                    </a>
+                    <a href="chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Spot Charts</span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="profile.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-user w-5"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-key w-5"></i>
+                            <span>API Keys</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="pt-24 pb-16 px-4 md:px-6" id="chart">
+        <div class="max-w-screen-2xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center space-x-4 mb-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                                    <i class="fab fa-bitcoin text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl md:text-3xl font-bold">BTC/USDT Perpetual</h1>
+                                    <div class="flex items-center space-x-3 text-gray-400">
+                                        <span>Futures Trading</span>
+                                        <span class="hidden md:inline">•</span>
+                                        <span class="hidden md:inline">Binance Futures</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden md:block">
+                                <div class="text-3xl font-bold" id="current-price">$42,856.32</div>
+                                <div class="price-up text-sm font-medium mt-1" id="price-change">+2.41% (+$1,008.45)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                        <div class="hidden md:block text-right">
+                            <div class="text-sm text-gray-400">Mark Price</div>
+                            <div class="font-mono font-bold" id="mark-price">$42,854.18</div>
+                        </div>
+                        <button id="toggle-fullscreen" class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-expand mr-2"></i> Fullscreen
+                        </button>
+                        <button id="refresh-chart" class="trading-btn trading-btn-primary">
+                            <i class="fas fa-sync-alt mr-2"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mobile Price Display -->
+                <div class="md:hidden glass rounded-xl p-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">Price</div>
+                            <div class="text-2xl font-bold" id="mobile-current-price">$42,856.32</div>
+                            <div class="price-up text-sm font-medium mt-1" id="mobile-price-change">+2.41%</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">Mark Price</div>
+                            <div class="text-xl font-bold">$42,854.18</div>
+                            <div class="text-xs text-gray-400 mt-1">Diff: -$2.14</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Controls -->
+                <div class="glass rounded-xl p-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <!-- Left: Timeframes -->
+                        <div class="flex flex-wrap gap-2">
+                            <button class="timeframe-btn active" data-tf="1m">1m</button>
+                            <button class="timeframe-btn" data-tf="5m">5m</button>
+                            <button class="timeframe-btn" data-tf="15m">15m</button>
+                            <button class="timeframe-btn" data-tf="1h">1h</button>
+                            <button class="timeframe-btn" data-tf="4h">4h</button>
+                            <button class="timeframe-btn" data-tf="1d">1d</button>
+                            <button class="timeframe-btn" data-tf="1w">1w</button>
+                        </div>
+                        
+                        <!-- Center: Chart Type -->
+                        <div class="flex items-center justify-center gap-2">
+                            <button id="chart-type-candle" class="chart-type-btn active">
+                                <i class="fas fa-chart-candlestick mr-2"></i> Candles
+                            </button>
+                            <button id="chart-type-line" class="chart-type-btn">
+                                <i class="fas fa-chart-line mr-2"></i> Line
+                            </button>
+                            <button id="chart-type-area" class="chart-type-btn">
+                                <i class="fas fa-chart-area mr-2"></i> Area
+                            </button>
+                        </div>
+                        
+                        <!-- Right: Actions -->
+                        <div class="flex items-center gap-3">
+                            <button id="toggle-mark-price" class="trading-btn trading-btn-secondary active">
+                                <i class="fas fa-bullseye mr-2"></i> Mark Price
+                            </button>
+                            <button id="toggle-funding" class="trading-btn trading-btn-secondary">
+                                <i class="fas fa-percentage mr-2"></i> Funding
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Chart Area -->
+            <div class="futures-grid gap-4 mb-6">
+                <!-- Chart Container (8/12 on desktop) -->
+                <div class="col-span-12 lg:col-span-8 tablet-full">
+                    <div class="glass rounded-2xl p-4 animate-slide-in-left">
+                        <!-- Chart Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-sm text-gray-400">
+                                    <span id="chart-period">1h</span> • 
+                                    <span id="chart-range">Futures Perpetual</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">LONG</span>
+                                    <span class="text-xs text-gray-400" id="open-positions">3 Open Positions</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button id="zoom-in" class="trading-btn trading-btn-secondary">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button id="zoom-out" class="trading-btn trading-btn-secondary">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <button id="reset-chart" class="trading-btn trading-btn-secondary">
+                                    <i class="fas fa-home"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Canvas -->
+                        <div class="chart-container relative">
+                            <!-- Crosshair Info -->
+                            <div class="crosshair-info glass-dark rounded-lg p-3 hidden" id="crosshair-info">
+                                <div class="text-sm text-gray-400">Crosshair</div>
+                                <div class="font-bold" id="crosshair-price">$0.00</div>
+                                <div class="text-xs text-gray-400" id="crosshair-time">Time: --:--</div>
+                            </div>
+                            
+                            <!-- Position Lines -->
+                            <div class="position-line" id="entry-line" style="display: none; top: 50%;"></div>
+                            <div class="position-label" id="entry-label" style="display: none; left: 10px; top: 50%;">Entry: $42,240.50</div>
+                            
+                            <div class="position-line liquidation-warning" id="liquidation-line" style="display: none; top: 80%;"></div>
+                            <div class="position-label" id="liquidation-label" style="display: none; left: 10px; top: 80%;">Liquidation: $38,450.20</div>
+                            
+                            <!-- Chart Loading -->
+                            <div class="chart-loading hidden" id="chart-loading">
+                                <div class="text-center">
+                                    <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                    <div class="text-gray-300">Loading futures data...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Div -->
+                            <div id="futures-chart" class="w-full h-full"></div>
+                        </div>
+                        
+                        <!-- Chart Footer -->
+                        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">Funding Rate</div>
+                                <div class="font-bold text-green-400" id="funding-rate">+0.0100%</div>
+                                <div class="text-xs text-gray-400 funding-timer" id="funding-timer">00:15:32</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">24h High</div>
+                                <div class="font-bold">$43,210.45</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">24h Low</div>
+                                <div class="font-bold">$41,895.67</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">Open Interest</div>
+                                <div class="font-bold">$12.4B</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Position & Trading Panel (4/12 on desktop) -->
+                <div class="col-span-12 lg:col-span-4 tablet-full">
+                    <div class="space-y-4">
+                        <!-- Position Info -->
+                        <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.1s">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold">Current Position</h3>
+                                <span class="badge badge-success">LIVE</span>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-sm text-gray-400">Size</div>
+                                        <div class="text-xl font-bold">0.25 BTC</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-400">Entry Price</div>
+                                        <div class="text-xl font-bold">$42,240.50</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-sm text-gray-400">Mark Price</div>
+                                        <div class="text-xl font-bold" id="position-mark-price">$42,854.18</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-400">Liquidation</div>
+                                        <div class="text-xl font-bold text-red-400">$38,450.20</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- P&L Display -->
+                                <div class="bg-gray-900/30 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="text-sm text-gray-400">Unrealized P&L</div>
+                                        <div class="text-sm text-gray-400">ROE</div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-2xl font-bold text-green-400" id="unrealized-pnl">+$842.56</div>
+                                        <div class="text-2xl font-bold text-green-400" id="roe">+2.81%</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Leverage -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="text-sm text-gray-400">Leverage</div>
+                                        <div class="text-sm font-bold" id="leverage-value">5x</div>
+                                    </div>
+                                    <input type="range" min="1" max="20" value="5" class="leverage-slider" id="leverage-slider">
+                                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                        <span>1x</span>
+                                        <span>10x</span>
+                                        <span>20x</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-800">
+                                    <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                        <i class="fas fa-plus mr-2"></i> Add
+                                    </button>
+                                    <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                        <i class="fas fa-times mr-2"></i> Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Trade -->
+                        <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.2s">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold">Quick Trade</h3>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-400">Cross</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-400">Isolated</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Order Type -->
+                            <div class="mb-4">
+                                <div class="text-sm text-gray-400 mb-2">Order Type</div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button class="order-type-btn active">Limit</button>
+                                    <button class="order-type-btn">Market</button>
+                                    <button class="order-type-btn">Stop</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Buy/Sell Buttons -->
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                    <i class="fas fa-arrow-up mr-2"></i> Buy/Long
+                                </button>
+                                <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                    <i class="fas fa-arrow-down mr-2"></i> Sell/Short
+                                </button>
+                            </div>
+                            
+                            <!-- Order Form -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-sm text-gray-400 mb-1 block">Price (USDT)</label>
+                                    <div class="relative">
+                                        <input type="text" value="42,856.32" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-right">
+                                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="text-sm text-gray-400 mb-1 block">Amount (BTC)</label>
+                                    <div class="relative">
+                                        <input type="text" value="0.1" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-right">
+                                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">฿</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">25%</button>
+                                    <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">50%</button>
+                                    <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">75%</button>
+                                    <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">100%</button>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-gray-800">
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span class="text-gray-400">Total</span>
+                                        <span class="font-bold">$4,285.63</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm mb-4">
+                                        <span class="text-gray-400">Margin (5x)</span>
+                                        <span class="font-bold">$857.13</span>
+                                    </div>
+                                    <button class="w-full trading-btn trading-btn-primary py-3">
+                                        Place Long Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Funding & Educational Panel -->
+                        <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.3s">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold">Funding Rate</h3>
+                                <div class="text-green-400 font-bold" id="panel-funding-rate">+0.0100%</div>
+                            </div>
+                            
+                            <div class="educational-tip p-3 rounded-lg mb-4">
+                                <div class="text-sm text-gray-400 mb-1">About Funding</div>
+                                <div class="text-xs text-gray-300">
+                                    Long positions pay shorts when positive. You receive when negative. Settles every 8 hours.
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="text-sm text-gray-400 mb-2">Next Funding</div>
+                                <div class="text-2xl font-bold funding-timer" id="panel-funding-timer">00:15:32</div>
+                                <div class="text-xs text-gray-400 mt-2">Every 8 hours</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Stats & Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Risk Metrics -->
+                <div class="glass rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold">Risk Metrics</h4>
+                        <span class="badge badge-success">Safe</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Margin Ratio</span>
+                                <span class="font-bold">42.5%</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 42.5%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Distance to Liq.</span>
+                                <span class="font-bold text-green-400">+10.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Stats -->
+                <div class="glass rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold">Market Stats</h4>
+                        <i class="fas fa-chart-bar text-blue-400"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">24h Volume</span>
+                            <span class="font-bold">$28.5B</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Open Interest</span>
+                            <span class="font-bold">$12.4B</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Basis</span>
+                            <span class="font-bold text-green-400">+0.12%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Position Health -->
+                <div class="glass rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold">Position Health</h4>
+                        <i class="fas fa-heartbeat text-green-400"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Breakeven</span>
+                            <span class="font-bold">$42,240.50</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Take Profit</span>
+                            <span class="font-bold text-green-400">$44,500.00</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Stop Loss</span>
+                            <span class="font-bold text-red-400">$41,800.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="glass rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold">Quick Actions</h4>
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="trading-btn trading-btn-secondary text-sm py-2">
+                            <i class="fas fa-redo mr-1"></i> Reverse
+                        </button>
+                        <button class="trading-btn trading-btn-secondary text-sm py-2">
+                            <i class="fas fa-percentage mr-1"></i> Hedge
+                        </button>
+                        <button class="trading-btn trading-btn-secondary text-sm py-2">
+                            <i class="fas fa-calculator mr-1"></i> Calc
+                        </button>
+                        <button class="trading-btn trading-btn-secondary text-sm py-2">
+                            <i class="fas fa-history mr-1"></i> History
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Educational Panel -->
+            <div class="glass rounded-2xl p-4 md:p-6 animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Futures Trading Guide</h3>
+                    <button id="toggle-guide" class="text-blue-400 hover:text-blue-300 text-sm">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="guide-content" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="educational-tip p-4 rounded-xl">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-balance-scale text-blue-400"></i>
+                                </div>
+                                <div class="font-medium">Leverage</div>
+                            </div>
+                            <div class="text-sm text-gray-300">
+                                Using 5x leverage means your position is 5x larger than your margin. Gains and losses are magnified.
+                            </div>
+                        </div>
+                        
+                        <div class="educational-tip p-4 rounded-xl">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-exclamation-triangle text-purple-400"></i>
+                                </div>
+                                <div class="font-medium">Liquidation</div>
+                            </div>
+                            <div class="text-sm text-gray-300">
+                                If price reaches $38,450.20, your position will be automatically closed to prevent further losses.
+                            </div>
+                        </div>
+                        
+                        <div class="educational-tip p-4 rounded-xl">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-percentage text-green-400"></i>
+                                </div>
+                                <div class="font-medium">Funding Rate</div>
+                            </div>
+                            <div class="text-sm text-gray-300">
+                                Long positions pay funding to shorts every 8 hours. Currently +0.01% means longs pay shorts.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-800">
+                        <div class="text-sm text-gray-400 mb-2">Trading Tip</div>
+                        <div class="text-sm text-gray-300">
+                            Always set stop-loss orders and never risk more than 2% of your account on a single trade. Monitor your margin ratio closely.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="dashboard.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="balances.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="#chart" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-chart-candlestick text-lg mb-1"></i>
+                <span class="text-xs">Futures</span>
+            </a>
+            <button id="mobile-menu-bottom" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-bars text-lg mb-1"></i>
+                <span class="text-xs">Menu</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuBottom = document.getElementById('mobile-menu-bottom');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const refreshButton = document.getElementById('refresh-chart');
+        const toggleFullscreen = document.getElementById('toggle-fullscreen');
+        const symbolSelector = document.getElementById('symbol-selector');
+        const chartTypeCandle = document.getElementById('chart-type-candle');
+        const chartTypeLine = document.getElementById('chart-type-line');
+        const chartTypeArea = document.getElementById('chart-type-area');
+        const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+        const toggleMarkPrice = document.getElementById('toggle-mark-price');
+        const toggleFunding = document.getElementById('toggle-funding');
+        const zoomIn = document.getElementById('zoom-in');
+        const zoomOut = document.getElementById('zoom-out');
+        const resetChart = document.getElementById('reset-chart');
+        const leverageSlider = document.getElementById('leverage-slider');
+        const leverageValue = document.getElementById('leverage-value');
+        const entryLine = document.getElementById('entry-line');
+        const entryLabel = document.getElementById('entry-label');
+        const liquidationLine = document.getElementById('liquidation-line');
+        const liquidationLabel = document.getElementById('liquidation-label');
+        const unrealizedPnl = document.getElementById('unrealized-pnl');
+        const roe = document.getElementById('roe');
+        const fundingTimer = document.getElementById('funding-timer');
+        const panelFundingTimer = document.getElementById('panel-funding-timer');
+        const chartLoading = document.getElementById('chart-loading');
+        const crosshairInfo = document.getElementById('crosshair-info');
+        const crosshairPrice = document.getElementById('crosshair-price');
+        const crosshairTime = document.getElementById('crosshair-time');
+        const toggleGuide = document.getElementById('toggle-guide');
+        const guideContent = document.getElementById('guide-content');
+        
+        // Chart Variables
+        let chart = null;
+        let candleSeries = null;
+        let lineSeries = null;
+        let areaSeries = null;
+        let markPriceLine = null;
+        let currentChartType = 'candle';
+        let currentTimeframe = '1h';
+        let chartData = [];
+        let markPrice = 42854.18;
+        let entryPrice = 42240.50;
+        let liquidationPrice = 38450.20;
+        let currentPrice = 42856.32;
+        let leverage = 5;
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        mobileMenuBottom.addEventListener('click', toggleMobileMenu);
+        closeSidebar.addEventListener('click', toggleMobileMenu);
+        sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        
+        // Generate Sample Data
+        function generateCandleData(count = 100) {
+            const data = [];
+            let time = Date.now() - count * 3600000;
+            let price = 42000;
+            
+            for (let i = 0; i < count; i++) {
+                const open = price;
+                const close = open + (Math.random() - 0.5) * 400;
+                const high = Math.max(open, close) + Math.random() * 200;
+                const low = Math.min(open, close) - Math.random() * 200;
+                const volume = 100 + Math.random() * 900;
+                
+                data.push({
+                    time: time / 1000,
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close,
+                    volume: volume
+                });
+                
+                price = close;
+                time += 3600000;
+            }
+            
+            return data;
+        }
+        
+        // Initialize Chart
+        function initChart() {
+            const chartContainer = document.getElementById('futures-chart');
+            
+            // Create chart
+            chart = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: chartContainer.clientHeight,
+                layout: {
+                    background: { color: 'transparent' },
+                    textColor: '#D9D9D9',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                    vertLine: {
+                        width: 1,
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        style: 2,
+                        labelBackgroundColor: '#3b82f6',
+                    },
+                    horzLine: {
+                        width: 1,
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        style: 2,
+                        labelBackgroundColor: '#3b82f6',
+                    },
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    scaleMargins: {
+                        top: 0.2,
+                        bottom: 0.1,
+                    },
+                },
+                timeScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    timeVisible: true,
+                    secondsVisible: false,
+                    fixLeftEdge: true,
+                    fixRightEdge: true,
+                },
+                watermark: {
+                    color: 'rgba(255, 255, 255, 0.05)',
+                    visible: true,
+                    text: 'Futures Chart | CryptoFutures Pro',
+                    fontSize: 20,
+                    horzAlign: 'center',
+                    vertAlign: 'center',
+                },
+            });
+            
+            // Generate sample data
+            chartData = generateCandleData(100);
+            
+            // Create candle series
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#10b981',
+                downColor: '#ef4444',
+                borderUpColor: '#10b981',
+                borderDownColor: '#ef4444',
+                wickUpColor: '#10b981',
+                wickDownColor: '#ef4444',
+            });
+            
+            // Create line series (hidden by default)
+            lineSeries = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+                lineType: 2,
+            });
+            
+            // Create area series (hidden by default)
+            areaSeries = chart.addAreaSeries({
+                topColor: 'rgba(59, 130, 246, 0.4)',
+                bottomColor: 'rgba(59, 130, 246, 0.05)',
+                lineColor: 'rgba(59, 130, 246, 0.8)',
+                lineWidth: 2,
+            });
+            
+            // Create mark price line
+            markPriceLine = chart.addLineSeries({
+                color: 'rgba(139, 92, 246, 0.6)',
+                lineWidth: 1,
+                lineStyle: 2, // Dashed line
+                title: 'Mark Price',
+            });
+            
+            // Set data
+            candleSeries.setData(chartData);
+            lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+            areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+            
+            // Add mark price line
+            const latestTime = chartData[chartData.length - 1].time;
+            const earliestTime = chartData[0].time;
+            markPriceLine.setData([
+                { time: earliestTime, value: markPrice },
+                { time: latestTime, value: markPrice }
+            ]);
+            
+            // Update price display
+            updatePriceDisplay(currentPrice, currentPrice - chartData[chartData.length - 2].close);
+            updatePositionDisplay();
+            
+            // Crosshair move event
+            chart.subscribeCrosshairMove(param => {
+                if (param.time) {
+                    const price = param.seriesPrices.get(candleSeries) || 
+                                 param.seriesPrices.get(lineSeries) || 
+                                 param.seriesPrices.get(areaSeries);
+                    
+                    if (price) {
+                        crosshairInfo.classList.remove('hidden');
+                        crosshairPrice.textContent = `$${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                        
+                        const date = new Date(param.time * 1000);
+                        crosshairTime.textContent = `Time: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                        
+                        // Position crosshair info
+                        const containerRect = chartContainer.getBoundingClientRect();
+                        crosshairInfo.style.left = `${param.point.x + 10}px`;
+                        crosshairInfo.style.top = `${param.point.y + 10}px`;
+                        
+                        // Update position lines visibility
+                        updatePositionLines(price, param.point.y);
+                    }
+                } else {
+                    crosshairInfo.classList.add('hidden');
+                    hidePositionLines();
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                chart.applyOptions({
+                    width: chartContainer.clientWidth,
+                    height: chartContainer.clientHeight,
+                });
+            });
+            
+            // Hide loading overlay
+            setTimeout(() => {
+                chartLoading.classList.add('hidden');
+                // Show position lines after chart loads
+                setTimeout(() => {
+                    showPositionLines();
+                }, 100);
+            }, 500);
+        }
+        
+        // Update Position Lines
+        function updatePositionLines(price, mouseY) {
+            const chartContainer = document.getElementById('futures-chart');
+            const containerHeight = chartContainer.clientHeight;
+            
+            // Calculate line positions based on price
+            const priceRange = chart.priceScale().getPriceRange();
+            if (!priceRange) return;
+            
+            const minPrice = priceRange.minValue;
+            const maxPrice = priceRange.maxValue;
+            const priceDiff = maxPrice - minPrice;
+            
+            // Calculate percentage positions
+            const entryPercent = 1 - ((entryPrice - minPrice) / priceDiff);
+            const liquidationPercent = 1 - ((liquidationPrice - minPrice) / priceDiff);
+            
+            // Position lines
+            entryLine.style.top = `${entryPercent * 100}%`;
+            entryLabel.style.top = `${entryPercent * 100}%`;
+            
+            liquidationLine.style.top = `${liquidationPercent * 100}%`;
+            liquidationLabel.style.top = `${liquidationPercent * 100}%`;
+            
+            // Position labels
+            const mouseYPercent = (mouseY / containerHeight) * 100;
+            if (Math.abs(mouseYPercent - (entryPercent * 100)) < 10) {
+                entryLabel.style.left = 'calc(100% - 120px)';
+            } else {
+                entryLabel.style.left = '10px';
+            }
+            
+            if (Math.abs(mouseYPercent - (liquidationPercent * 100)) < 10) {
+                liquidationLabel.style.left = 'calc(100% - 150px)';
+            } else {
+                liquidationLabel.style.left = '10px';
+            }
+        }
+        
+        // Show Position Lines
+        function showPositionLines() {
+            entryLine.style.display = 'block';
+            entryLabel.style.display = 'block';
+            liquidationLine.style.display = 'block';
+            liquidationLabel.style.display = 'block';
+            
+            // Initial position update
+            const latestCandle = chartData[chartData.length - 1];
+            updatePositionLines(latestCandle.close, 100);
+        }
+        
+        // Hide Position Lines
+        function hidePositionLines() {
+            entryLine.style.display = 'none';
+            entryLabel.style.display = 'none';
+            liquidationLine.style.display = 'none';
+            liquidationLabel.style.display = 'none';
+        }
+        
+        // Update Price Display
+        function updatePriceDisplay(price, change) {
+            const priceElements = [
+                document.getElementById('current-price'),
+                document.getElementById('mobile-current-price')
+            ];
+            
+            const changeElements = [
+                document.getElementById('price-change'),
+                document.getElementById('mobile-price-change')
+            ];
+            
+            const changePercent = (change / (price - change)) * 100;
+            const isPositive = change >= 0;
+            
+            priceElements.forEach(el => {
+                if (el) el.textContent = `$${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            });
+            
+            changeElements.forEach(el => {
+                if (el) {
+                    const text = `${isPositive ? '+' : ''}${changePercent.toFixed(2)}% ${isPositive ? '+' : ''}$${Math.abs(change).toFixed(2)}`;
+                    el.textContent = text;
+                    el.className = isPositive ? 'price-up text-sm font-medium mt-1' : 'price-down text-sm font-medium mt-1';
+                }
+            });
+        }
+        
+        // Update Position Display
+        function updatePositionDisplay() {
+            const positionSize = 0.25; // BTC
+            const positionValue = positionSize * entryPrice;
+            const currentValue = positionSize * currentPrice;
+            const pnl = currentValue - positionValue;
+            const roePercent = (pnl / (positionValue / leverage)) * 100;
+            
+            // Update P&L
+            unrealizedPnl.textContent = `${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
+            unrealizedPnl.className = `text-2xl font-bold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            
+            // Update ROE
+            roe.textContent = `${roePercent >= 0 ? '+' : ''}${roePercent.toFixed(2)}%`;
+            roe.className = `text-2xl font-bold ${roePercent >= 0 ? 'text-green-400' : 'text-red-400'}`;
+        }
+        
+        // Funding Timer
+        function initFundingTimer() {
+            let seconds = 932; // 15:32
+            
+            function updateTimer() {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                fundingTimer.textContent = timeString;
+                panelFundingTimer.textContent = timeString;
+                
+                seconds--;
+                if (seconds < 0) seconds = 28800; // Reset to 8 hours
+            }
+            
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+        
+        // Chart Type Switching
+        function setChartType(type) {
+            currentChartType = type;
+            
+            // Update button states
+            chartTypeCandle.classList.toggle('active', type === 'candle');
+            chartTypeLine.classList.toggle('active', type === 'line');
+            chartTypeArea.classList.toggle('active', type === 'area');
+            
+            // Show/hide series
+            candleSeries.applyOptions({ visible: type === 'candle' });
+            lineSeries.applyOptions({ visible: type === 'line' });
+            areaSeries.applyOptions({ visible: type === 'area' });
+        }
+        
+        // Timeframe Switching
+        function setTimeframe(tf) {
+            currentTimeframe = tf;
+            
+            // Update button states
+            timeframeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tf') === tf);
+            });
+            
+            // Update chart period display
+            document.getElementById('chart-period').textContent = tf;
+            
+            showNotification(`Switched to ${tf} timeframe`, 'info');
+        }
+        
+        // Refresh Chart
+        refreshButton.addEventListener('click', function() {
+            this.classList.add('animate-spin');
+            chartLoading.classList.remove('hidden');
+            
+            // Simulate API call
+            setTimeout(() => {
+                this.classList.remove('animate-spin');
+                chartLoading.classList.add('hidden');
+                
+                // Generate new data
+                chartData = generateCandleData(100);
+                
+                // Update series
+                candleSeries.setData(chartData);
+                lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                
+                // Update mark price line
+                const latestTime = chartData[chartData.length - 1].time;
+                const earliestTime = chartData[0].time;
+                markPriceLine.setData([
+                    { time: earliestTime, value: markPrice },
+                    { time: latestTime, value: markPrice }
+                ]);
+                
+                // Update price and position
+                const latestCandle = chartData[chartData.length - 1];
+                currentPrice = latestCandle.close;
+                updatePriceDisplay(currentPrice, currentPrice - chartData[chartData.length - 2].close);
+                updatePositionDisplay();
+                
+                showNotification('Futures data refreshed', 'success');
+            }, 1000);
+        });
+        
+        // Fullscreen Toggle
+        toggleFullscreen.addEventListener('click', function() {
+            const chartContainer = document.querySelector('.chart-container');
+            
+            if (!document.fullscreenElement) {
+                if (chartContainer.requestFullscreen) {
+                    chartContainer.requestFullscreen();
+                } else if (chartContainer.webkitRequestFullscreen) {
+                    chartContainer.webkitRequestFullscreen();
+                } else if (chartContainer.msRequestFullscreen) {
+                    chartContainer.msRequestFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-compress mr-2"></i> Exit Fullscreen';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-expand mr-2"></i> Fullscreen';
+            }
+        });
+        
+        // Exit fullscreen when user presses ESC
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                toggleFullscreen.innerHTML = '<i class="fas fa-expand mr-2"></i> Fullscreen';
+            }
+        });
+        
+        // Chart Type Events
+        chartTypeCandle.addEventListener('click', () => setChartType('candle'));
+        chartTypeLine.addEventListener('click', () => setChartType('line'));
+        chartTypeArea.addEventListener('click', () => setChartType('area'));
+        
+        // Timeframe Events
+        timeframeButtons.forEach(btn => {
+            btn.addEventListener('click', () => setTimeframe(btn.getAttribute('data-tf')));
+        });
+        
+        // Mark Price Toggle
+        toggleMarkPrice.addEventListener('click', function() {
+            this.classList.toggle('active');
+            markPriceLine.applyOptions({ visible: this.classList.contains('active') });
+        });
+        
+        // Leverage Slider
+        leverageSlider.addEventListener('input', function() {
+            leverage = parseInt(this.value);
+            leverageValue.textContent = `${leverage}x`;
+            updatePositionDisplay();
+        });
+        
+        // Zoom Controls
+        zoomIn.addEventListener('click', () => {
+            chart.timeScale().applyOptions({ barSpacing: chart.timeScale().options().barSpacing * 1.2 });
+        });
+        
+        zoomOut.addEventListener('click', () => {
+            chart.timeScale().applyOptions({ barSpacing: chart.timeScale().options().barSpacing / 1.2 });
+        });
+        
+        resetChart.addEventListener('click', () => {
+            chart.timeScale().fitContent();
+        });
+        
+        // Symbol Selector
+        symbolSelector.addEventListener('change', function() {
+            const symbol = this.value;
+            const symbolName = this.options[this.selectedIndex].text;
+            
+            // Update header
+            document.querySelector('h1').textContent = `${symbolName} Perpetual`;
+            
+            // Show loading
+            chartLoading.classList.remove('hidden');
+            
+            // Simulate symbol change
+            setTimeout(() => {
+                // Generate new data for different symbol
+                chartData = generateCandleData(100);
+                
+                // Update series
+                candleSeries.setData(chartData);
+                lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                
+                // Update mark price line
+                const latestTime = chartData[chartData.length - 1].time;
+                const earliestTime = chartData[0].time;
+                markPriceLine.setData([
+                    { time: earliestTime, value: markPrice },
+                    { time: latestTime, value: markPrice }
+                ]);
+                
+                // Update price
+                const latestCandle = chartData[chartData.length - 1];
+                currentPrice = latestCandle.close;
+                updatePriceDisplay(currentPrice, currentPrice - chartData[chartData.length - 2].close);
+                updatePositionDisplay();
+                
+                chartLoading.classList.add('hidden');
+                showNotification(`Switched to ${symbolName} Futures`, 'success');
+            }, 1000);
+        });
+        
+        // Toggle Guide
+        toggleGuide.addEventListener('click', function() {
+            guideContent.classList.toggle('hidden');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-chevron-down')) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+        
+        // Simulate Price Updates
+        function simulatePriceUpdates() {
+            setInterval(() => {
+                if (chartData.length > 0) {
+                    const lastCandle = chartData[chartData.length - 1];
+                    const newClose = lastCandle.close + (Math.random() - 0.5) * 50;
+                    const newHigh = Math.max(lastCandle.high, newClose);
+                    const newLow = Math.min(lastCandle.low, newClose);
+                    
+                    const updatedCandle = {
+                        time: Date.now() / 1000,
+                        open: lastCandle.close,
+                        high: newHigh,
+                        low: newLow,
+                        close: newClose,
+                        volume: lastCandle.volume * (0.9 + Math.random() * 0.2)
+                    };
+                    
+                    // Update data arrays
+                    chartData.push(updatedCandle);
+                    if (chartData.length > 200) chartData.shift();
+                    
+                    // Update series
+                    candleSeries.update(updatedCandle);
+                    lineSeries.update({ time: updatedCandle.time, value: updatedCandle.close });
+                    areaSeries.update({ time: updatedCandle.time, value: updatedCandle.close });
+                    
+                    // Update mark price (slightly different from last price)
+                    markPrice = newClose + (Math.random() - 0.5) * 10;
+                    const latestTime = chartData[chartData.length - 1].time;
+                    const earliestTime = chartData[0].time;
+                    markPriceLine.setData([
+                        { time: earliestTime, value: markPrice },
+                        { time: latestTime, value: markPrice }
+                    ]);
+                    
+                    // Update price and position
+                    currentPrice = newClose;
+                    updatePriceDisplay(currentPrice, currentPrice - lastCandle.close);
+                    updatePositionDisplay();
+                    
+                    // Update position mark price display
+                    document.getElementById('position-mark-price').textContent = 
+                        `$${markPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+            }, 5000); // Update every 5 seconds
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chart
+            initChart();
+            
+            // Initialize funding timer
+            initFundingTimer();
+            
+            // Start price updates simulation
+            simulatePriceUpdates();
+            
+            // Update chart range display
+            const now = new Date();
+            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            document.getElementById('chart-range').textContent = 
+                `${yesterday.toLocaleDateString([], {day: 'numeric', month: 'short'})} - ${now.toLocaleDateString([], {day: 'numeric', month: 'short'})}`;
+            
+            // Add click effects to trading buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Demo notification
+            setTimeout(() => {
+                showNotification('Futures chart loaded. Monitor your liquidation price and funding rate.', 'success');
+            }, 1000);
+        });
+        
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Expose to global scope
+        window.showNotification = showNotification;
+    </script>
+</body>
+</html>

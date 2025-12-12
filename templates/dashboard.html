@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- ApexCharts for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <!-- Custom Styles -->
+  <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ================================================================== */
+    /* Z-INDEX HIERARCHY – FINAL & BULLETPROOF */
+    /* ================================================================== */
+    /* Highest → Notifications (your toast) */
+    .toast-notification,
+    .fixed.top-20.right-4.glass-dark {
+        z-index: 99999 !important;   /* ← Nothing will ever cover this */
+    }
+
+    /* Mobile sidebar */
+    #mobile-sidebar {
+        z-index: 9999 !important;
+    }
+
+    /* Top fixed navbar */
+    nav.glass.fixed {
+        z-index: 9980;
+    }
+
+    /* Bottom mobile nav bar */
+    .fixed.bottom-0.glass {
+        z-index: 9970;
+    }
+
+    /* ================================================================== */
+    /* MOBILE CONTENT SPACING – already perfect from previous fix */
+    /* ================================================================== */
+    main {
+        padding-top: 180px;
+    }
+    @media (max-width: 1024px) {
+        main { padding-top: 190px !important; }
+    }
+    @media (max-width: 640px) {
+        main { padding-top: 200px !important; }
+    }
+    @media (max-width: 540px) and (max-height: 720px) {
+        main { padding-top: 210px !important; }
+    }
+    @media (max-width: 1024px) {
+        main { padding-bottom: 100px !important; }
+    }
+
+    /* ================================================================== */
+    /* All your original animations & styles */
+    /* ================================================================== */
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes pulse-subtle { 0%,100%{opacity:1} 50%{opacity:.8} }
+    @keyframes slideIn { from{transform:translateX(-20px);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes shimmer { 0%{background-position:-1000px 0} 100%{background-position:1000px 0} }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
+
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+    .animate-slide-in { animation: slideIn .5s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn .3s ease-out forwards; }
+    .animate-shimmer { animation: shimmer 2s infinite linear; background: linear-gradient(90deg,rgba(255,255,255,0)0%,rgba(255,255,255,.1)50%,rgba(255,255,255,0)100%); background-size:1000px 100%; }
+
+    .glass {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .glass-dark {
+        background: rgba(15,23,42,0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(59,130,246,.5) rgba(255,255,255,.05); }
+    .custom-scrollbar::-webkit-scrollbar { width:6px; height:6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background:rgba(255,255,255,.05); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background:rgba(59,130,246,.5); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:rgba(59,130,246,.8); }
+
+    .gradient-text {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .price-up { color:#10b981; background:rgba(16,185,129,0.1); }
+    .price-down { color:#ef4444; background:rgba(239,68,68,0.1); }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(12,1fr);
+        grid-auto-rows: minmax(100px,auto);
+        gap: 1rem;
+    }
+
+    @media (max-width:640px) {
+        .dashboard-grid { grid-template-columns:1fr; }
+        .mobile-full { grid-column:1/-1 !important; }
+    }
+    @media (min-width:641px) and (max-width:1024px) {
+        .dashboard-grid { grid-template-columns:repeat(6,1fr); }
+    }
+    @media (min-width:1025px) {
+        .desktop-col-3 { grid-column:span 3; }
+        .desktop-col-4 { grid-column:span 4; }
+        .desktop-col-6 { grid-column:span 6; }
+        .desktop-col-8 { grid-column:span 8; }
+        .desktop-col-12 { grid-column:span 12; }
+    }
+
+    body {
+        background-color:#0f172a;
+        color:#f8fafc;
+        overflow-x:hidden;
+    }
+
+    .badge { display:inline-flex; align-items:center; padding:.25rem .75rem; border-radius:9999px; font-size:.75rem; font-weight:600; }
+    .badge-success { background:rgba(16,185,129,.1); color:#10b981; }
+    .badge-warning { background:rgba(245,158,11,.1); color:#f59e0b; }
+    .badge-danger { background:rgba(239,68,68,.1); color:#ef4444; }
+    .badge-info { background:rgba(59,130,246,.1); color:#3b82f6; }
+
+    .notification-dot {
+        position:absolute; top:-2px; right:-2px; width:8px; height:8px;
+        background:#ef4444; border-radius:50%; animation:pulse-subtle 2s infinite;
+    }
+
+    .trading-btn {
+        padding:.5rem 1rem; border-radius:.375rem; font-weight:500;
+        transition:all .2s; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .trading-btn-primary {
+        background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white;
+    }
+    .trading-btn-primary:hover {
+        background:linear-gradient(135deg,#1d4ed8,#1e40af);
+        transform:translateY(-2px); box-shadow:0 10px 25px rgba(59,130,246,.3);
+    }
+    .trading-btn-secondary {
+        background:rgba(255,255,255,.05); color:#f8fafc;
+        border:1px solid rgba(255,255,255,.1);
+    }
+    .trading-btn-secondary:hover {
+        background:rgba(255,255,255,.1); transform:translateY(-2px);
+    }
+
+    .ticker-container { overflow:hidden; white-space:nowrap; }
+    .ticker-content { display:inline-block; animation:ticker 60s linear infinite; }
+    .ticker-content:hover { animation-play-state:paused; }
+
+    /* Add any remaining styles you had (toggle switch, etc.) below if needed */
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center animate-pulse-subtle">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="#dashboard" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="balances.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="futures_chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Futures
+                    </a>
+                    <div class="relative">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                            <i class="fas fa-bell mr-2"></i> Alerts
+                            <span class="notification-dot"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center: Search & Quick Actions -->
+            <div class="flex-1 max-w-2xl mx-4 hidden lg:block">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        placeholder="Search BTC, ETH, SOL..."
+                        class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-2 px-4 pl-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    >
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                        <!-- <button class="text-gray-400 hover:text-white">
+                            <i class="fas fa-filter"></i>
+                        </button> -->
+                        <!-- <button class="text-gray-400 hover:text-white">
+                            <i class="fas fa-star"></i>
+                        </button> -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: User & Settings -->
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl bg-gray-800/50 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <!-- Notifications (Mobile) -->
+                <button class="relative lg:hidden w-10 h-10 rounded-xl bg-gray-800/50 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                
+                <!-- User Profile -->
+                <div class="relative" id="user-menu">
+                    <button class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                            <span class="font-bold">{{ user.username[:2].upper() }}</span>
+                        </div>
+                        <a href="/profile">
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">{{ user.username }}</div>
+                            <div class="text-xs text-gray-400">Professional</div>
+                        </div>
+                        </a>
+                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 glass-dark rounded-xl shadow-2xl border border-gray-800 hidden z-50">
+                        <div class="p-4 border-b border-gray-800">
+                            <div class="font-medium">{{ user.username }}</div>
+                            <div class="text-sm text-gray-400">{{ user.email }}</div>
+                        </div>
+                        <div class="p-2">
+                            <a href="/profile" class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors">
+                                <i class="fas fa-user text-gray-400 w-5"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="settings.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors">
+                                <i class="fas fa-cog text-gray-400 w-5"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors">
+                                <i class="fas fa-key text-gray-400 w-5"></i>
+                                <span>API Keys</span>
+                            </a>
+                            <div class="border-t border-gray-800 my-2"></div>
+                            <a href="login.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors">
+                                <i class="fas fa-sign-out-alt text-red-400 w-5"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Search Bar -->
+        <div class="mt-3 lg:hidden">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    placeholder="Search trading pairs..."
+                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-2 px-4 pl-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            <div class="p-6 border-b border-gray-800">
+                <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button><br>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    <!-- <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button> -->
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="#dashboard" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="balances.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="futures_chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-candlestick w-5"></i>
+                        <span>Futures</span>
+                    </a>
+                    <a href="chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Charts</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-bell w-5"></i>
+                        <span>Alerts</span>
+                        <span class="notification-dot"></span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="/profile" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-user w-5"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-key w-5"></i>
+                            <span>API Keys</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Dashboard Content -->
+    <main class="pt-20 pb-10 px-4 md:px-6 foldable-padding">
+        <!-- Page Header -->
+        <div class="mb-6 desktop-col-12">
+            <div class="flex flex-col md:flex-row md:items-center justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-2">Trading Dashboard</h1>
+                    <div class="flex items-center space-x-4 text-gray-400">
+                        <div class="flex items-center">
+                            <span class="status-indicator status-online"></span>
+                            <span class="text-sm">Connected to Binance</span>
+                        </div>
+                        <span class="hidden md:inline">•</span>
+                        <div class="text-sm">Last updated: <span id="last-updated">Just now</span></div>
+                        <button id="refresh-data" class="text-blue-400 hover:text-blue-300 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                    <div class="hidden md:block text-right">
+                        <div class="text-sm text-gray-400">Server Time</div>
+                        <div class="font-mono font-bold" id="server-time">00:00:00 UTC</div>
+                    </div>
+                    <button class="trading-btn trading-btn-secondary">
+                        <i class="fas fa-download mr-2"></i> Export
+                    </button>
+                    <button class="trading-btn trading-btn-primary">
+                        <i class="fas fa-plus mr-2"></i> New Trade
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Price Ticker -->
+        <div class="mb-6 desktop-col-12 glass rounded-xl overflow-hidden">
+            <div class="ticker-container">
+                <div class="ticker-content">
+                    <!-- Ticker items will be populated by JavaScript -->
+                    <div class="inline-flex items-center space-x-8 px-4 py-3">
+                        <span class="text-gray-400 font-medium">Live Markets:</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid gap-4">
+            <!-- Total Portfolio Value -->
+            <div class="desktop-col-4 mobile-full glass rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="text-gray-400 text-sm mb-1">Total Portfolio Value</div>
+                        <div class="text-3xl font-bold" id="total-value">$0.00</div>
+                        <div class="flex items-center mt-2">
+                            <span class="text-gray-400 text-sm font-medium mr-2">$0.00</span>
+                            <span class="text-gray-400 text-sm">(0.00%)</span>
+                            <i class="fas fa-minus ml-2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-wallet text-green-400 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="bg-gray-900/30 rounded-xl p-4">
+                        <div class="text-gray-400 text-sm mb-1">Spot</div>
+                        <div class="text-xl font-bold">$0.00</div>
+                        <div class="text-gray-400 text-xs">0.00%</div>
+                    </div>
+                    <div class="bg-gray-900/30 rounded-xl p-4">
+                        <div class="text-gray-400 text-sm mb-1">Futures</div>
+                        <div class="text-xl font-bold">$0.00</div>
+                        <div class="text-gray-400 text-xs">0.00%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="desktop-col-8 mobile-full">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Stat 1 -->
+                    <div class="glass rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-400"></i>
+                            </div>
+                            <span class="badge badge-success">Live</span>
+                        </div>
+                        <div class="text-gray-400 text-sm mb-1">24h P&L</div>
+                        <div class="text-2xl font-bold text-gray-400">$0.00</div>
+                        <div class="text-gray-400 text-xs mt-1">0.00%</div>
+                    </div>
+                    
+                    <!-- Stat 2 -->
+                    <div class="glass rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-percentage text-purple-400"></i>
+                            </div>
+                            <span class="badge badge-warning">High</span>
+                        </div>
+                        <div class="text-gray-400 text-sm mb-1">Leverage Used</div>
+                        <div class="text-2xl font-bold">0.0x</div>
+                        <div class="text-gray-400 text-xs mt-1">Margin: $0.00</div>
+                    </div>
+                    
+                    <!-- Stat 3 -->
+                    <div class="glass rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-green-400"></i>
+                            </div>
+                            <span class="badge badge-success">Safe</span>
+                        </div>
+                        <div class="text-gray-400 text-sm mb-1">Margin Ratio</div>
+                        <div class="text-2xl font-bold">0.0%</div>
+                        <div class="text-gray-400 text-xs mt-1">Liquidation: $0.00</div>
+                    </div>
+                    
+                    <!-- Stat 4 -->
+                    <div class="glass rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-fire text-orange-400"></i>
+                            </div>
+                            <span class="badge badge-info">0</span>
+                        </div>
+                        <div class="text-gray-400 text-sm mb-1">Open Positions</div>
+                        <div class="text-2xl font-bold">0</div>
+                        <div class="text-gray-400 text-xs mt-1">0 Long, 0 Short</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Chart -->
+            <div class="desktop-col-8 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <div>
+                        <div class="text-gray-400 text-sm mb-1" id="chart-symbol-title">BTC/USDT Futures</div>
+                        <div class="flex items-center space-x-3">
+                            <div class="text-2xl font-bold" id="chart-current-price">$91,558.56</div>
+                            <div class="price-up px-3 py-1 rounded-lg text-sm font-medium" id="chart-change-percent">+2.09%</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                        <select id="coin-selector" class="bg-gray-900/50 border border-gray-700 text-white rounded-lg px-3 py-1 text-sm">
+                            <option value="BTCUSDT">BTC/USDT</option>
+                            <option value="ETHUSDT">ETH/USDT</option>
+                            <option value="SOLUSDT">SOL/USDT</option>
+                            <option value="ADAUSDT">ADA/USDT</option>
+                            <option value="DOTUSDT">DOT/USDT</option>
+                            <option value="AVAXUSDT">AVAX/USDT</option>
+                            <option value="XRPUSDT">XRP/USDT</option>
+                            <option value="BNBUSDT">BNB/USDT</option>
+                        </select>
+                        <div class="flex bg-gray-900/50 rounded-lg p-1" id="interval-buttons">
+                            <button class="px-3 py-1 rounded text-sm font-medium bg-blue-500/20 text-blue-400 interval-btn" data-interval="15m">15M</button>
+                            <button class="px-3 py-1 rounded text-sm font-medium text-gray-400 hover:text-white interval-btn" data-interval="1h">1H</button>
+                            <button class="px-3 py-1 rounded text-sm font-medium text-gray-400 hover:text-white interval-btn" data-interval="4h">4H</button>
+                            <button class="px-3 py-1 rounded text-sm font-medium text-gray-400 hover:text-white interval-btn" data-interval="1d">1D</button>
+                        </div>
+                        <button class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="main-chart" class="h-64 md:h-80"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm">24h High</div>
+                        <div class="font-bold" id="chart-high">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm">24h Low</div>
+                        <div class="font-bold" id="chart-low">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm">24h Volume</div>
+                        <div class="font-bold" id="chart-volume">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm">24h Change</div>
+                        <div class="font-bold" id="chart-change">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Open Positions -->
+            <div class="desktop-col-4 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Open Positions</h3>
+                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        <i class="fas fa-plus mr-1"></i> New
+                    </button>
+                </div>
+                <div class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                    <!-- Position 1 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">B</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">BTC/USDT</div>
+                                    <div class="text-xs text-gray-400">Perpetual</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-400 font-bold">+$842.56</div>
+                                <div class="text-green-400 text-xs">+2.8%</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <div class="text-gray-400">Size</div>
+                                <div class="font-medium">0.25 BTC</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Entry</div>
+                                <div class="font-medium">$41,240.50</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Leverage</div>
+                                <div class="font-medium">5x</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Liq. Price</div>
+                                <div class="font-medium text-red-400">$38,450.20</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-800 flex justify-between">
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                <i class="fas fa-chart-line mr-1"></i> Chart
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 text-sm font-medium">
+                                <i class="fas fa-times mr-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Position 2 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">E</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">ETH/USDT</div>
+                                    <div class="text-xs text-gray-400">Perpetual</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-red-400 font-bold">-$124.32</div>
+                                <div class="text-red-400 text-xs">-0.8%</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <div class="text-gray-400">Size</div>
+                                <div class="font-medium">2.5 ETH</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Entry</div>
+                                <div class="font-medium">$2,280.40</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Leverage</div>
+                                <div class="font-medium">3x</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Liq. Price</div>
+                                <div class="font-medium text-red-400">$2,145.60</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-800 flex justify-between">
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                <i class="fas fa-chart-line mr-1"></i> Chart
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 text-sm font-medium">
+                                <i class="fas fa-times mr-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Position 3 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">S</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">SOL/USDT</div>
+                                    <div class="text-xs text-gray-400">Perpetual</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-400 font-bold">+$324.18</div>
+                                <div class="text-green-400 text-xs">+3.2%</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <div class="text-gray-400">Size</div>
+                                <div class="font-medium">15 SOL</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Entry</div>
+                                <div class="font-medium">$94.20</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Leverage</div>
+                                <div class="font-medium">10x</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">Liq. Price</div>
+                                <div class="font-medium text-red-400">$88.40</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-800 flex justify-between">
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                <i class="fas fa-chart-line mr-1"></i> Chart
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 text-sm font-medium">
+                                <i class="fas fa-times mr-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Overview -->
+            <div class="desktop-col-6 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Market Overview</h3>
+                    <div class="flex space-x-1">
+                        <button id="top-gainers-btn" class="px-3 py-1 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400 market-tab active" data-view="gainers">Top Gainers</button>
+                        <button id="top-losers-btn" class="px-3 py-1 rounded-lg text-sm font-medium text-gray-400 hover:text-white market-tab" data-view="losers">Top Losers</button>
+                        <button id="top-volume-btn" class="px-3 py-1 rounded-lg text-sm font-medium text-gray-400 hover:text-white market-tab" data-view="volume">Volume</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-gray-400 text-sm border-b border-gray-800">
+                                <th class="pb-3 font-medium">Pair</th>
+                                <th class="pb-3 font-medium text-right">Price</th>
+                                <th class="pb-3 font-medium text-right">24h Change</th>
+                                <th class="pb-3 font-medium text-right hidden md:table-cell">Volume</th>
+                                <th class="pb-3 font-medium text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Row 1 -->
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">BTC/USDT</div>
+                                            <div class="text-xs text-gray-400">Bitcoin</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-right font-bold">$42,856.32</td>
+                                <td class="py-4 text-right">
+                                    <span class="price-up px-2 py-1 rounded text-sm font-medium">+2.41%</span>
+                                </td>
+                                <td class="py-4 text-right hidden md:table-cell">
+                                    <div class="text-sm">$28.5B</div>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                        Trade
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 2 -->
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">ETH/USDT</div>
+                                            <div class="text-xs text-gray-400">Ethereum</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-right font-bold">$2,245.67</td>
+                                <td class="py-4 text-right">
+                                    <span class="price-down px-2 py-1 rounded text-sm font-medium">-1.24%</span>
+                                </td>
+                                <td class="py-4 text-right hidden md:table-cell">
+                                    <div class="text-sm">$14.2B</div>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                        Trade
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 3 -->
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">SOL/USDT</div>
+                                            <div class="text-xs text-gray-400">Solana</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-right font-bold">$98.45</td>
+                                <td class="py-4 text-right">
+                                    <span class="price-up px-2 py-1 rounded text-sm font-medium">+5.32%</span>
+                                </td>
+                                <td class="py-4 text-right hidden md:table-cell">
+                                    <div class="text-sm">$3.8B</div>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                        Trade
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 4 -->
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">ADA/USDT</div>
+                                            <div class="text-xs text-gray-400">Cardano</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-right font-bold">$0.5123</td>
+                                <td class="py-4 text-right">
+                                    <span class="price-up px-2 py-1 rounded text-sm font-medium">+0.84%</span>
+                                </td>
+                                <td class="py-4 text-right hidden md:table-cell">
+                                    <div class="text-sm">$1.2B</div>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                        Trade
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 5 -->
+                            <tr class="hover:bg-gray-800/30 transition-colors">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">DOT/USDT</div>
+                                            <div class="text-xs text-gray-400">Polkadot</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-right font-bold">$7.24</td>
+                                <td class="py-4 text-right">
+                                    <span class="price-down px-2 py-1 rounded text-sm font-medium">-2.15%</span>
+                                </td>
+                                <td class="py-4 text-right hidden md:table-cell">
+                                    <div class="text-sm">$0.8B</div>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                        Trade
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="desktop-col-6 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Recent Activity</h3>
+                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        View All
+                    </button>
+                </div>
+                <div class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                    <!-- Activity 1 -->
+                    <div class="flex items-start space-x-3 p-3 rounded-xl bg-gray-900/30">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-arrow-up text-green-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium">Position Opened</div>
+                                <div class="text-xs text-gray-400">2 min ago</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">BTC/USDT Long 0.25 BTC @ $42,240.50</div>
+                            <div class="flex items-center mt-2">
+                                <span class="badge badge-success mr-2">Filled</span>
+                                <span class="text-xs text-gray-400">Leverage: 5x</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity 2 -->
+                    <div class="flex items-start space-x-3 p-3 rounded-xl bg-gray-900/30">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exchange-alt text-blue-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium">Limit Order Placed</div>
+                                <div class="text-xs text-gray-400">15 min ago</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">ETH/USDT Buy Limit @ $2,200.00</div>
+                            <div class="flex items-center mt-2">
+                                <span class="badge badge-warning mr-2">Pending</span>
+                                <span class="text-xs text-gray-400">Quantity: 1.5 ETH</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity 3 -->
+                    <div class="flex items-start space-x-3 p-3 rounded-xl bg-gray-900/30">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-times text-red-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium">Order Cancelled</div>
+                                <div class="text-xs text-gray-400">1 hour ago</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">SOL/USDT Stop Loss @ $95.40</div>
+                            <div class="flex items-center mt-2">
+                                <span class="badge badge-danger mr-2">Cancelled</span>
+                                <span class="text-xs text-gray-400">User cancelled</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity 4 -->
+                    <div class="flex items-start space-x-3 p-3 rounded-xl bg-gray-900/30">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-wallet text-purple-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium">Deposit Received</div>
+                                <div class="text-xs text-gray-400">3 hours ago</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">+5,000 USDT deposited to Futures Wallet</div>
+                            <div class="flex items-center mt-2">
+                                <span class="badge badge-success mr-2">Completed</span>
+                                <span class="text-xs text-gray-400">Balance updated</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity 5 -->
+                    <div class="flex items-start space-x-3 p-3 rounded-xl bg-gray-900/30">
+                        <div class="w-10 h-10 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-bell text-orange-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="font-medium">Price Alert Triggered</div>
+                                <div class="text-xs text-gray-400">5 hours ago</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">BTC reached $42,800.00</div>
+                            <div class="flex items-center mt-2">
+                                <span class="badge badge-info mr-2">Alert</span>
+                                <span class="text-xs text-gray-400">Target reached</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Favorite Pairs -->
+            <div class="desktop-col-12 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Favorite Trading Pairs</h3>
+                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Edit
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <!-- Favorite 1 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"></div>
+                                <span class="font-bold">BTC</span>
+                            </div>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">$42,856</div>
+                        <div class="text-green-400 text-sm mt-1">+2.41%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 28.5K</div>
+                    </div>
+                    
+                    <!-- Favorite 2 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+                                <span class="font-bold">ETH</span>
+                            </div>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">$2,245</div>
+                        <div class="text-red-400 text-sm mt-1">-1.24%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 14.2K</div>
+                    </div>
+                    
+                    <!-- Favorite 3 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full"></div>
+                                <span class="font-bold">SOL</span>
+                            </div>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">$98.45</div>
+                        <div class="text-green-400 text-sm mt-1">+5.32%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 3.8K</div>
+                    </div>
+                    
+                    <!-- Favorite 4 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full"></div>
+                                <span class="font-bold">ADA</span>
+                            </div>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">$0.512</div>
+                        <div class="text-green-400 text-sm mt-1">+0.84%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 1.2K</div>
+                    </div>
+                    
+                    <!-- Favorite 5 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                <span class="font-bold">DOT</span>
+                            </div>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">$7.24</div>
+                        <div class="text-red-400 text-sm mt-1">-2.15%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 0.8K</div>
+                    </div>
+                    
+                    <!-- Favorite 6 -->
+                    <div class="bg-gray-900/30 rounded-xl p-4 hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+                                <span class="font-bold">AVAX</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-white">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="text-2xl font-bold">$24.56</div>
+                        <div class="text-green-400 text-sm mt-1">+3.42%</div>
+                        <div class="text-xs text-gray-400 mt-2">24h Volume: 0.6K</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Risk Management -->
+            <div class="desktop-col-6 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Risk Management</h3>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-400">Auto:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <!-- Risk Level -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-gray-400">Risk Level</div>
+                            <div class="text-sm font-medium text-green-400">Medium</div>
+                        </div>
+                        <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-green-500 to-yellow-500 w-2/3"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>Conservative</span>
+                            <span>Aggressive</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Position Sizing -->
+                    <div>
+                        <div class="text-gray-400 mb-3">Position Size Calculator</div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="text-xs text-gray-400 mb-1 block">Account Size</label>
+                                <div class="relative">
+                                    <input type="text" value="124,856" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-3 text-sm">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">USDT</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 mb-1 block">Risk %</label>
+                                <div class="relative">
+                                    <input type="text" value="2" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-3 text-sm">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900/30 rounded-xl p-4">
+                            <div class="text-sm text-gray-400 mb-2">Recommended Position Size</div>
+                            <div class="text-2xl font-bold text-green-400">$2,497.12</div>
+                            <div class="text-xs text-gray-400 mt-1">Based on 2% risk of total account</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Funding Rate Countdown -->
+            <div class="desktop-col-6 mobile-full glass rounded-2xl p-4 md:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Funding Rates</h3>
+                    <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        View All
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <!-- Funding 1 -->
+                    <div class="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                <span class="font-bold text-white">B</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">BTC/USDT</div>
+                                <div class="text-xs text-gray-400">Perpetual</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-green-400 font-medium">+0.0100%</div>
+                            <div class="text-xs text-gray-400" id="btc-funding-timer">Next: 00:15:32</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Funding 2 -->
+                    <div class="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                <span class="font-bold text-white">E</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">ETH/USDT</div>
+                                <div class="text-xs text-gray-400">Perpetual</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-red-400 font-medium">-0.0050%</div>
+                            <div class="text-xs text-gray-400" id="eth-funding-timer">Next: 00:15:32</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Funding 3 -->
+                    <div class="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg flex items-center justify-center">
+                                <span class="font-bold text-white">S</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">SOL/USDT</div>
+                                <div class="text-xs text-gray-400">Perpetual</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-green-400 font-medium">+0.0150%</div>
+                            <div class="text-xs text-gray-400" id="sol-funding-timer">Next: 00:15:32</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-800">
+                    <div class="text-sm text-gray-400 mb-2">Next Collective Funding</div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-2xl font-bold" id="collective-timer">00:15:32</div>
+                        <div class="text-xs text-gray-400">Every 8 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="#dashboard" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="balances.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="futures_chart.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-chart-candlestick text-lg mb-1"></i>
+                <span class="text-xs">Futures</span>
+            </a>
+            <button id="mobile-menu-bottom" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-bars text-lg mb-1"></i>
+                <span class="text-xs">Menu</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuBottom = document.getElementById('mobile-menu-bottom');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const userMenu = document.getElementById('user-menu');
+        const userDropdown = document.getElementById('user-dropdown');
+        const themeToggle = document.getElementById('theme-toggle');
+        const refreshButton = document.getElementById('refresh-data');
+        const lastUpdated = document.getElementById('last-updated');
+        const serverTime = document.getElementById('server-time');
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        mobileMenuBottom.addEventListener('click', toggleMobileMenu);
+        closeSidebar.addEventListener('click', toggleMobileMenu);
+        sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        
+        // User Dropdown Toggle
+        userMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!userMenu.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Theme Toggle
+        themeToggle.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-moon')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                document.documentElement.classList.add('light');
+                document.body.classList.remove('bg-gradient-to-br', 'from-gray-900', 'via-slate-900', 'to-gray-950');
+                document.body.classList.add('bg-gradient-to-br', 'from-gray-100', 'via-slate-100', 'to-gray-200', 'text-gray-900');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                document.documentElement.classList.remove('light');
+                document.body.classList.remove('bg-gradient-to-br', 'from-gray-100', 'via-slate-100', 'to-gray-200', 'text-gray-900');
+                document.body.classList.add('bg-gradient-to-br', 'from-gray-900', 'via-slate-900', 'to-gray-950');
+            }
+        });
+        
+        // Refresh Data
+        refreshButton.addEventListener('click', function() {
+            this.classList.add('animate-spin');
+            setTimeout(() => {
+                this.classList.remove('animate-spin');
+                lastUpdated.textContent = 'Just now';
+                showNotification('Data refreshed successfully');
+            }, 1000);
+        });
+        
+        // Update Server Time
+        function updateServerTime() {
+            const now = new Date();
+            const timeString = now.toUTCString().split(' ')[4];
+            serverTime.textContent = timeString + ' UTC';
+        }
+        
+        setInterval(updateServerTime, 1000);
+        updateServerTime();
+        
+        let currentInterval = '15m';
+        let currentSymbol = 'BTCUSDT';
+        let mainChart;
+        let currentMarketView = 'gainers'; // 'gainers', 'losers', 'volume'
+
+        // Initialize Main Chart
+        async function initMainChart() {
+            try {
+                const response = await fetch(`/api/binance/candles/${currentSymbol}?interval=${currentInterval}&limit=100`);
+                const data = await response.json();
+
+                const options = {
+                    series: [{
+                        name: `${currentSymbol.replace('USDT', '/USDT')}`,
+                        data: data.candles
+                    }],
+                    chart: {
+                        type: 'candlestick',
+                        height: '100%',
+                        background: 'transparent',
+                        toolbar: {
+                            show: true,
+                            tools: {
+                                download: true,
+                                selection: true,
+                                zoom: true,
+                                zoomin: true,
+                                zoomout: true,
+                                pan: true,
+                                reset: true
+                            }
+                        },
+                        zoom: {
+                            enabled: true
+                        }
+                    },
+                    plotOptions: {
+                        candlestick: {
+                            colors: {
+                                upward: '#10b981',
+                                downward: '#ef4444'
+                            }
+                        }
+                    },
+                    grid: {
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        strokeDashArray: 3
+                    },
+                    xaxis: {
+                        type: 'datetime',
+                        labels: {
+                            style: {
+                                colors: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '11px'
+                            },
+                            format: currentInterval === '1d' ? 'dd MMM' : 'HH:mm'
+                        },
+                        axisBorder: {
+                            show: false
+                        },
+                        title: {
+                            text: 'Time',
+                            style: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '14px',
+                                fontWeight: 600
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '12px',
+                                fontWeight: 500
+                            },
+                            formatter: function(value) {
+                                return '$' + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            }
+                        },
+                        title: {
+                            text: 'Price (USDT)',
+                            style: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '14px',
+                                fontWeight: 600
+                            }
+                        }
+                    },
+                    tooltip: {
+                        theme: 'dark',
+                        x: {
+                            format: currentInterval === '1h' || currentInterval === '4h' ? 'dd MMM HH:mm' : 'dd MMM yyyy'
+                        },
+                        y: {
+                            formatter: function(value) {
+                                return '$' + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            }
+                        }
+                    }
+                };
+
+                mainChart = new ApexCharts(document.querySelector("#main-chart"), options);
+                mainChart.render();
+
+                // Update chart price after loading
+                setTimeout(() => {
+                    updateAllPriceLabels();
+                }, 1000);
+
+                return mainChart;
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+                // Fallback to static data
+                const options = {
+                    series: [{
+                        name: 'BTC/USDT',
+                        data: [
+                            [new Date('2023-12-01').getTime(), 41000],
+                            [new Date('2023-12-02').getTime(), 41500],
+                            [new Date('2023-12-03').getTime(), 40800],
+                            [new Date('2023-12-04').getTime(), 41200],
+                            [new Date('2023-12-05').getTime(), 41800],
+                            [new Date('2023-12-06').getTime(), 42200],
+                            [new Date('2023-12-07').getTime(), 42856],
+                        ]
+                    }],
+                    chart: {
+                        type: 'area',
+                        height: '100%',
+                        background: 'transparent'
+                    },
+                    colors: ['#3b82f6']
+                };
+                mainChart = new ApexCharts(document.querySelector("#main-chart"), options);
+                mainChart.render();
+                return mainChart;
+            }
+        }
+
+        // Change chart interval
+        function changeInterval(interval) {
+            currentInterval = interval;
+            // Update button styles
+            document.querySelectorAll('.interval-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-500/20', 'text-blue-400');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+            document.querySelector(`[data-interval="${interval}"]`).classList.add('bg-blue-500/20', 'text-blue-400');
+            document.querySelector(`[data-interval="${interval}"]`).classList.remove('text-gray-400', 'hover:text-white');
+
+            // Reload chart
+            if (mainChart) {
+                mainChart.destroy();
+            }
+            initMainChart();
+        }
+
+        // Change chart symbol
+        async function changeSymbol(symbol) {
+            currentSymbol = symbol;
+            // Update chart title
+            const titleElement = document.getElementById('chart-symbol-title');
+            if (titleElement) {
+                titleElement.textContent = `${symbol.replace('USDT', '/USDT')} Futures`;
+            }
+
+            // Get current price and change for the new symbol and update the labels
+            try {
+                const tickerRes = await fetch('/api/binance/ticker');
+                const tickerData = await tickerRes.json();
+
+                const ticker = tickerData.tickers.find(t => t.symbol === symbol);
+
+                if (ticker) {
+                    const price = parseFloat(ticker.lastPrice || ticker.price);
+                    const changePercent = parseFloat(ticker.priceChangePercent || 0);
+                    const high24h = parseFloat(ticker.highPrice || 0);
+                    const low24h = parseFloat(ticker.lowPrice || 0);
+                    const volume = parseFloat(ticker.volume || 0);
+
+                    const priceElement = document.querySelector('#main-chart + div .text-2xl.font-bold');
+                    const changeElement = document.querySelector('#main-chart + div .price-up, #main-chart + div .price-down');
+
+                    if (priceElement) {
+                        priceElement.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    }
+                    if (changeElement) {
+                        changeElement.className = changePercent >= 0 ? 'price-up px-3 py-1 rounded-lg text-sm font-medium' : 'price-down px-3 py-1 rounded-lg text-sm font-medium';
+                        changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                    }
+
+                    // Update chart stats
+                    updateChartStats(high24h, low24h, volume, changePercent, symbol);
+                }
+            } catch (error) {
+                console.error('Error fetching price for new symbol:', error);
+            }
+
+            // Reload chart
+            if (mainChart) {
+                mainChart.destroy();
+            }
+            await initMainChart();
+        }
+        
+        // Initialize Live Ticker
+        async function initLiveTicker() {
+            const tickerContent = document.querySelector('.ticker-content');
+
+            try {
+                const response = await fetch('/api/binance/ticker');
+                const data = await response.json();
+                const tickers = data.tickers;
+
+                // Filter for popular pairs
+                const popularSymbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ADAUSDT', 'DOTUSDT', 'AVAXUSDT', 'XRPUSDT', 'BNBUSDT'];
+                const coins = tickers.filter(t => popularSymbols.includes(t.symbol)).map(t => ({
+                    symbol: t.symbol,
+                    price: parseFloat(t.lastPrice || t.price),
+                    change: parseFloat(t.priceChangePercent || 0),
+                    color: getColorForSymbol(t.symbol)
+                }));
+
+                let tickerHTML = '<div class="inline-flex items-center space-x-8 px-4 py-3"><span class="text-gray-400 font-medium">Live Markets:</span>';
+
+                coins.forEach(coin => {
+                    const isPositive = coin.change >= 0;
+                    tickerHTML += `
+                        <div class="inline-flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-gradient-to-r ${coin.color} rounded-full"></div>
+                            <span class="font-medium">${coin.symbol.replace('USDT', '/USDT')}</span>
+                            <span class="font-bold">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: coin.price < 1 ? 4 : 2})}</span>
+                            <span class="${isPositive ? 'text-green-400' : 'text-red-400'}">
+                                ${isPositive ? '+' : ''}${coin.change.toFixed(2)}%
+                            </span>
+                        </div>
+                    `;
+                });
+
+                // Duplicate for seamless scrolling
+                tickerHTML += '</div>' + tickerHTML.replace('Live Markets:', '');
+                tickerContent.innerHTML = tickerHTML;
+            } catch (error) {
+                console.error('Error loading ticker data:', error);
+                // Fallback to static data
+                const coins = [
+                    { symbol: 'BTC/USDT', price: 42856.32, change: 2.41, color: 'from-yellow-500 to-orange-500' },
+                    { symbol: 'ETH/USDT', price: 2245.67, change: -1.24, color: 'from-purple-500 to-blue-500' },
+                    { symbol: 'SOL/USDT', price: 98.45, change: 5.32, color: 'from-gray-500 to-gray-700' },
+                ];
+
+                let tickerHTML = '<div class="inline-flex items-center space-x-8 px-4 py-3"><span class="text-gray-400 font-medium">Live Markets:</span>';
+
+                coins.forEach(coin => {
+                    const isPositive = coin.change >= 0;
+                    tickerHTML += `
+                        <div class="inline-flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-gradient-to-r ${coin.color} rounded-full"></div>
+                            <span class="font-medium">${coin.symbol}</span>
+                            <span class="font-bold">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: coin.price < 1 ? 4 : 2})}</span>
+                            <span class="${isPositive ? 'text-green-400' : 'text-red-400'}">
+                                ${isPositive ? '+' : ''}${coin.change.toFixed(2)}%
+                            </span>
+                        </div>
+                    `;
+                });
+
+                tickerHTML += '</div>' + tickerHTML.replace('Live Markets:', '');
+                tickerContent.innerHTML = tickerHTML;
+            }
+        }
+
+        function getColorForSymbol(symbol) {
+            const colors = {
+                'BTCUSDT': 'from-yellow-500 to-orange-500',
+                'ETHUSDT': 'from-purple-500 to-blue-500',
+                'SOLUSDT': 'from-gray-500 to-gray-700',
+                'ADAUSDT': 'from-red-500 to-pink-500',
+                'DOTUSDT': 'from-blue-500 to-cyan-500',
+                'AVAXUSDT': 'from-green-500 to-emerald-500',
+                'XRPUSDT': 'from-gray-400 to-gray-600',
+                'BNBUSDT': 'from-yellow-600 to-orange-600'
+            };
+            return colors[symbol] || 'from-gray-500 to-gray-700';
+        }
+
+        async function refreshMainChart(chart) {
+            try {
+                const response = await fetch(`/api/binance/candles/${currentSymbol}?interval=${currentInterval}&limit=100`);
+                const data = await response.json();
+                chart.updateSeries([{
+                    name: `${currentSymbol.replace('USDT', '/USDT')}`,
+                    data: data.candles
+                }]);
+                console.log('Chart refreshed with latest data');
+            } catch (error) {
+                console.error('Error refreshing chart:', error);
+            }
+        }
+
+        async function initMarketOverview() {
+            await updateMarketOverview();
+        }
+
+        async function updateMarketOverview() {
+            try {
+                console.log('Fetching market overview data for view:', currentMarketView);
+                const tickerRes = await fetch('/api/binance/ticker');
+                const tickerData = await tickerRes.json();
+
+                const tickers = tickerData.tickers;
+
+                const tableBody = document.querySelector('.overflow-x-auto.custom-scrollbar table tbody');
+                if (!tableBody) {
+                    console.error('Table body not found!');
+                    return;
+                }
+
+                // Filter for USDT pairs only
+                const usdtPairs = tickers.filter(t => t.symbol && t.symbol.endsWith('USDT'));
+
+                let displayPairs = [];
+
+                if (currentMarketView === 'gainers') {
+                    // Top 20 gainers
+                    displayPairs = usdtPairs
+                        .sort((a, b) => parseFloat(b.priceChangePercent || 0) - parseFloat(a.priceChangePercent || 0))
+                        .slice(0, 20);
+                } else if (currentMarketView === 'losers') {
+                    // Top 20 losers
+                    displayPairs = usdtPairs
+                        .sort((a, b) => parseFloat(a.priceChangePercent || 0) - parseFloat(b.priceChangePercent || 0))
+                        .slice(0, 20);
+                } else if (currentMarketView === 'volume') {
+                    // Top 20 by volume
+                    displayPairs = usdtPairs
+                        .sort((a, b) => parseFloat(b.volume || 0) - parseFloat(a.volume || 0))
+                        .slice(0, 20);
+                }
+
+                let html = '';
+
+                displayPairs.forEach(ticker => {
+                    const symbol = ticker.symbol;
+                    const price = parseFloat(ticker.lastPrice || ticker.price);
+                    const changePercent = parseFloat(ticker.priceChangePercent || 0);
+                    const volume = parseFloat(ticker.volume || 0);
+                    const isPositive = changePercent >= 0;
+
+                    html += `
+                        <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                            <td class="py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r ${getColorForSymbol(symbol)} rounded-full"></div>
+                                    <div>
+                                        <div class="font-medium">${symbol.replace('USDT', '/USDT')}</div>
+                                        <div class="text-xs text-gray-400">${getCoinName(symbol)}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 text-right font-bold">$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="py-4 text-right">
+                                <span class="${isPositive ? 'price-up' : 'price-down'} px-2 py-1 rounded text-sm font-medium">${isPositive ? '+' : ''}${changePercent.toFixed(2)}%</span>
+                            </td>
+                            <td class="py-4 text-right hidden md:table-cell">
+                                <div class="text-sm">$${(volume * price / 1000000).toFixed(1)}M</div>
+                            </td>
+                            <td class="py-4 text-right">
+                                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                    Trade
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = html;
+            } catch (error) {
+                console.error('Error updating market overview:', error);
+            }
+        }
+
+        function switchMarketView(view) {
+            currentMarketView = view;
+
+            // Update button styles
+            document.querySelectorAll('.market-tab').forEach(btn => {
+                btn.classList.remove('bg-blue-500/20', 'text-blue-400');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+
+            document.querySelector(`[data-view="${view}"]`).classList.add('bg-blue-500/20', 'text-blue-400');
+            document.querySelector(`[data-view="${view}"]`).classList.remove('text-gray-400', 'hover:text-white');
+
+            // Update table
+            updateMarketOverview();
+        }
+
+        function getCoinName(symbol) {
+            const names = {
+                'BTCUSDT': 'Bitcoin',
+                'ETHUSDT': 'Ethereum',
+                'SOLUSDT': 'Solana',
+                'ADAUSDT': 'Cardano',
+                'DOTUSDT': 'Polkadot'
+            };
+            return names[symbol] || symbol.replace('USDT', '');
+        }
+
+        async function updateLiveTickerPrices() {
+            try {
+                const response = await fetch('/api/binance/ticker');
+                const data = await response.json();
+                const tickers = data.tickers;
+
+                // Update ticker prices
+                const tickerContent = document.querySelector('.ticker-content');
+                const items = tickerContent.querySelectorAll('.inline-flex.items-center.space-x-2');
+
+                items.forEach(item => {
+                    const symbolSpan = item.querySelector('span.font-medium');
+                    if (symbolSpan) {
+                        const symbol = symbolSpan.textContent.replace('/USDT', 'USDT');
+                        const ticker = tickers.find(t => t.symbol === symbol);
+                        if (ticker) {
+                            const price = parseFloat(ticker.price);
+                            const priceSpan = item.querySelector('span.font-bold');
+                            if (priceSpan) {
+                                priceSpan.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: price < 1 ? 4 : 2})}`;
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating ticker prices:', error);
+            }
+        }
+
+        async function updateAllPriceLabels() {
+            try {
+                const tickerRes = await fetch('/api/binance/ticker');
+                const tickerData = await tickerRes.json();
+
+                const tickers = tickerData.tickers;
+                // Note: tickers now include 24hr stats like priceChangePercent, highPrice, lowPrice
+
+                // Update favorite pairs
+                const pairs = document.querySelectorAll('.bg-gray-900\\/30.rounded-xl.p-4');
+                pairs.forEach(pair => {
+                    const symbolSpan = pair.querySelector('span.font-bold');
+                    if (symbolSpan) {
+                        const symbol = symbolSpan.textContent.replace(/[^A-Z]/g, '') + 'USDT';
+                        const ticker = tickers.find(t => t.symbol === symbol);
+
+                        if (ticker) {
+                            const price = parseFloat(ticker.lastPrice || ticker.price);
+                            const changePercent = parseFloat(ticker.priceChangePercent || 0);
+
+                            const priceDiv = pair.querySelector('div.text-2xl.font-bold');
+                            const changeDiv = pair.querySelector('div.text-green-400, div.text-red-400');
+
+                            if (priceDiv) {
+                                priceDiv.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                            }
+                            if (changeDiv) {
+                                changeDiv.className = changePercent >= 0 ? 'text-green-400 text-sm mt-1' : 'text-red-400 text-sm mt-1';
+                                changeDiv.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                            }
+                        }
+                    }
+                });
+
+                // Update main chart price and stats if visible
+                const currentSymbolTicker = tickers.find(t => t.symbol === currentSymbol);
+                if (currentSymbolTicker) {
+                    console.log('Found current symbol ticker:', currentSymbolTicker);
+                    const price = parseFloat(currentSymbolTicker.lastPrice || currentSymbolTicker.price);
+                    const changePercent = parseFloat(currentSymbolTicker.priceChangePercent || 0);
+                    const high24h = parseFloat(currentSymbolTicker.highPrice || 0);
+                    const low24h = parseFloat(currentSymbolTicker.lowPrice || 0);
+                    const volume = parseFloat(currentSymbolTicker.volume || 0);
+
+                    console.log('Chart stats data:', {price, changePercent, high24h, low24h, volume, currentSymbol});
+                    updateMainChartPrice(price, changePercent);
+                    updateChartStats(high24h, low24h, volume, changePercent, currentSymbol);
+                } else {
+                    console.log('Current symbol ticker not found for:', currentSymbol);
+                }
+
+            } catch (error) {
+                console.error('Error updating all price labels:', error);
+            }
+        }
+
+        function updateChartStats(high24h, low24h, volume, changePercent, symbol) {
+            console.log('Updating chart stats:', {high24h, low24h, volume, changePercent, symbol});
+            const highElement = document.getElementById('chart-high');
+            const lowElement = document.getElementById('chart-low');
+            const volumeElement = document.getElementById('chart-volume');
+            const changeElement = document.getElementById('chart-change');
+
+            console.log('Elements found:', {highElement, lowElement, volumeElement, changeElement});
+
+            if (highElement) {
+                highElement.textContent = high24h > 0 ? `$${high24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-';
+                console.log('Set high:', highElement.textContent);
+            }
+            if (lowElement) {
+                lowElement.textContent = low24h > 0 ? `$${low24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-';
+                console.log('Set low:', lowElement.textContent);
+            }
+            if (volumeElement) {
+                if (symbol === 'BTCUSDT') {
+                    volumeElement.textContent = volume > 0 ? `${(volume / 1000).toFixed(1)}K BTC` : '-';
+                } else if (symbol === 'ETHUSDT') {
+                    volumeElement.textContent = volume > 0 ? `${(volume / 1000).toFixed(1)}K ETH` : '-';
+                } else {
+                    volumeElement.textContent = volume > 0 ? `${(volume / 1000000).toFixed(1)}M` : '-';
+                }
+                console.log('Set volume:', volumeElement.textContent);
+            }
+            if (changeElement) {
+                changeElement.textContent = changePercent !== undefined ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%` : '-';
+                changeElement.className = changePercent >= 0 ? 'font-bold text-green-400' : 'font-bold text-red-400';
+                console.log('Set change:', changeElement.textContent);
+            }
+        }
+        
+        // Funding Rate Timers
+        function initFundingTimers() {
+            let seconds = 932; // 15:32
+            
+            function updateTimers() {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                document.getElementById('btc-funding-timer').textContent = `Next: ${timeString}`;
+                document.getElementById('eth-funding-timer').textContent = `Next: ${timeString}`;
+                document.getElementById('sol-funding-timer').textContent = `Next: ${timeString}`;
+                document.getElementById('collective-timer').textContent = timeString;
+                
+                seconds--;
+                if (seconds < 0) seconds = 28800; // Reset to 8 hours
+            }
+            
+            updateTimers();
+            setInterval(updateTimers, 1000);
+        }
+        
+        // Real-time Price Updates via WebSocket
+        function initWebSocket() {
+            // Ticker WebSocket
+            const tickerWs = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+
+            tickerWs.onopen = function(event) {
+                console.log('Connected to Binance Ticker WebSocket');
+            };
+
+            tickerWs.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                updatePrices(data);
+            };
+
+            tickerWs.onerror = function(error) {
+                console.error('Ticker WebSocket error:', error);
+            };
+
+            tickerWs.onclose = function(event) {
+                console.log('Ticker WebSocket closed, reconnecting...');
+                setTimeout(() => initWebSocket(), 5000);
+            };
+
+            // Candlestick WebSocket for current symbol
+            const klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@kline_${currentInterval}`);
+
+            klineWs.onopen = function(event) {
+                console.log('Connected to Binance Kline WebSocket');
+            };
+
+            klineWs.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.k && data.k.x) { // If candle is closed
+                    updateCandlestick(data.k);
+                }
+            };
+
+            klineWs.onerror = function(error) {
+                console.error('Kline WebSocket error:', error);
+            };
+
+            klineWs.onclose = function(event) {
+                console.log('Kline WebSocket closed, reconnecting...');
+                setTimeout(() => initWebSocket(), 5000);
+            };
+
+            return { tickerWs, klineWs };
+        }
+
+        function updateCandlestick(kline) {
+            // For now, just log. In a full implementation, update the chart with new candle
+            console.log('New candle:', kline);
+            // To update ApexCharts candlestick, we can append new data
+            // But for simplicity, we'll refresh the chart periodically
+        }
+
+        function updatePrices(tickers) {
+            tickers.forEach(ticker => {
+                const symbol = ticker.s.replace('USDT', '/USDT');
+                const price = parseFloat(ticker.c);
+                const changePercent = parseFloat(ticker.P);
+
+                // Update ticker
+                updateTickerPrice(symbol, price, changePercent);
+
+                // Update main chart price if current symbol
+                if (ticker.s === currentSymbol) {
+                    updateMainChartPrice(price, changePercent);
+                }
+
+                // Update favorite pairs
+                updateFavoritePair(ticker.s, price, changePercent);
+            });
+        }
+
+        function updateTickerPrice(symbol, price, changePercent) {
+            const tickerContent = document.querySelector('.ticker-content');
+            const items = tickerContent.querySelectorAll('.inline-flex.items-center.space-x-2');
+            items.forEach(item => {
+                const symbolSpan = item.querySelector('span.font-medium');
+                if (symbolSpan && symbolSpan.textContent === symbol) {
+                    const priceSpan = item.querySelector('span.font-bold');
+                    const changeSpan = item.querySelector('span.text-green-400, span.text-red-400');
+
+                    if (priceSpan) {
+                        priceSpan.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: price < 1 ? 4 : 2})}`;
+                    }
+                    if (changeSpan) {
+                        changeSpan.className = changePercent >= 0 ? 'text-green-400' : 'text-red-400';
+                        changeSpan.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                    }
+                }
+            });
+        }
+
+        function updateMainChartPrice(price, changePercent) {
+            const priceElement = document.getElementById('chart-current-price');
+            const changeElement = document.getElementById('chart-change-percent');
+
+            if (priceElement) {
+                priceElement.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+            if (changeElement) {
+                changeElement.className = changePercent >= 0 ? 'price-up px-3 py-1 rounded-lg text-sm font-medium' : 'price-down px-3 py-1 rounded-lg text-sm font-medium';
+                changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+            }
+        }
+
+        function updateFavoritePair(symbol, price, changePercent) {
+            const pairs = document.querySelectorAll('.bg-gray-900\\/30.rounded-xl.p-4');
+            pairs.forEach(pair => {
+                const symbolSpan = pair.querySelector('span.font-bold');
+                if (symbolSpan && symbolSpan.textContent === symbol.replace('USDT', '')) {
+                    const priceDiv = pair.querySelector('div.text-2xl.font-bold');
+                    const changeDiv = pair.querySelector('div.text-green-400, div.text-red-400');
+
+                    if (priceDiv) {
+                        priceDiv.textContent = `$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    }
+                    if (changeDiv) {
+                        changeDiv.className = changePercent >= 0 ? 'text-green-400 text-sm mt-1' : 'text-red-400 text-sm mt-1';
+                        changeDiv.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                    }
+                }
+            });
+        }
+        
+        // Notification System
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : type === 'error' ? 'border-red-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : type === 'error' ? 'bg-red-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : type === 'error' ? 'fa-exclamation text-red-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Dashboard Widgets Interaction
+        function initWidgetInteractions() {
+            // Make widget headers draggable
+            const widgetHeaders = document.querySelectorAll('.widget-header');
+            widgetHeaders.forEach(header => {
+                header.addEventListener('mousedown', startDrag);
+            });
+            
+            // Add click effects to trading buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Tab switching
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('tab-active'));
+                    this.classList.add('tab-active');
+                    
+                    // Show corresponding tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
+                });
+            });
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize components
+            const chart = initMainChart();
+            initLiveTicker();
+            initFundingTimers();
+            initWebSocket();
+            initWidgetInteractions();
+            initMarketOverview();
+
+            // Add interval button listeners
+            document.querySelectorAll('.interval-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const interval = this.getAttribute('data-interval');
+                    changeInterval(interval);
+                });
+            });
+
+            // Add coin selector listener
+            document.getElementById('coin-selector').addEventListener('change', function() {
+                const symbol = this.value;
+                changeSymbol(symbol);
+            });
+
+            // Add market tab listeners
+            document.querySelectorAll('.market-tab').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    switchMarketView(view);
+                });
+            });
+
+            // Refresh chart every 5 minutes
+            setInterval(() => {
+                refreshMainChart(chart);
+            }, 300000);
+
+            // Refresh market overview, ticker, and all price labels every 2 seconds
+            setInterval(() => {
+                updateMarketOverview();
+                updateLiveTickerPrices();
+                updateAllPriceLabels();
+            }, 2000);
+
+            // Update last updated time
+            setInterval(() => {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                lastUpdated.textContent = `${minutes.toString().padStart(2, '0')} min ago`;
+            }, 60000);
+            
+            // Add animation to cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all dashboard cards
+            document.querySelectorAll('.glass').forEach(card => {
+                card.classList.add('opacity-0');
+                observer.observe(card);
+            });
+            
+            // Demo: Simulate incoming notification with live BTC price
+            setTimeout(async () => {
+                try {
+                    const tickerRes = await fetch('/api/binance/ticker');
+                    const tickerData = await tickerRes.json();
+                    const btcTicker = tickerData.tickers.find(t => t.symbol === 'BTCUSDT');
+                    if (btcTicker) {
+                        const btcPrice = parseFloat(btcTicker.lastPrice || btcTicker.price);
+                        showNotification(`BTC has reached $${btcPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}. Consider taking profits on your long position.`, 'info');
+                    }
+                } catch (error) {
+                    console.error('Error fetching BTC price for notification:', error);
+                    showNotification('BTC has reached a significant level. Consider taking profits on your long position.', 'info');
+                }
+            }, 3000);
+            
+            // Demo: Simulate position update
+            setTimeout(() => {
+                const pnlElement = document.querySelector('.text-green-400.font-bold');
+                if (pnlElement) {
+                    const currentValue = parseFloat(pnlElement.textContent.replace('$', '').replace('+', '').replace(',', ''));
+                    const newValue = currentValue + 125.50;
+                    pnlElement.textContent = `+$${newValue.toFixed(2)}`;
+                    pnlElement.parentElement.querySelector('.text-green-400.text-xs').textContent = `+${(newValue / 842.56 * 2.8).toFixed(2)}%`;
+                }
+            }, 8000);
+        });
+        
+        // Export functions to global scope
+        window.showNotification = showNotification;
+    </script>
+</body>
+</html>

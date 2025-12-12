@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Trading Chart | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInLeft {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes pulse-subtle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-in-left { animation: slideInLeft 0.4s ease-out forwards; }
+    .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+    
+    /* Glass morphism */
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-dark {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Custom scrollbar */
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(59, 130, 246, 0.5) rgba(255, 255, 255, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.5);
+        border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.8);
+    }
+    
+    /* Gradient text */
+    .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    /* Chart container */
+    .chart-container {
+        height: 500px;
+        position: relative;
+    }
+    
+    @media (max-height: 800px) { .chart-container { height: 400px; } }
+    @media (max-height: 600px) { .chart-container { height: 300px; } }
+    
+    /* Tabs */
+    .tab-active {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-bottom: 2px solid #3b82f6;
+    }
+    
+    /* Price indicators */
+    .price-up { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .price-down { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+    
+    /* Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    
+    /* Chart type buttons */
+    .chart-type-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .chart-type-btn.active {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    .chart-type-btn:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Indicator & tool buttons */
+    .indicator-btn, .drawing-tool-btn, .timeframe-btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+    }
+    .indicator-btn.active, .drawing-tool-btn.active, .timeframe-btn.active {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Trading buttons */
+    .trading-btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .trading-btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    .trading-btn-primary:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+    .trading-btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .trading-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* Drawing tools */
+    .drawing-tool-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s;
+    }
+    .drawing-tool-btn.active {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Timeframe buttons */
+    .timeframe-btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .timeframe-btn.active {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Chart crosshair info */
+    .crosshair-info {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        pointer-events: none;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .chart-container { height: 350px; }
+        .mobile-stack { flex-direction: column !important; }
+        .mobile-full { width: 100% !important; }
+    }
+    
+    @media (max-width: 640px) {
+        .chart-container { height: 280px; }
+        .mobile-hide { display: none !important; }
+        .mobile-show { display: block !important; }
+    }
+    
+    @media (max-width: 480px) {
+        .chart-container { height: 250px; }
+    }
+    
+    /* Dark mode */
+    body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        overflow-x: hidden;
+    }
+    
+    /* Chart loading overlay */
+    .chart-loading {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        border-radius: 0.75rem;
+    }
+    
+    /* Order lines */
+    .order-line {
+        position: absolute;
+        width: 1px;
+        background: rgba(59, 130, 246, 0.5);
+        z-index: 5;
+    }
+    .order-line-label {
+        position: absolute;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        z-index: 6;
+        pointer-events: none;
+    }
+
+    /* ────────────────────────────────────── */
+    /* FIX 1: Prevent navbar overlap */
+    /* ────────────────────────────────────── */
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50 !important; /* Above everything except sidebar */
+    }
+
+    main {
+        padding-top: 7.5rem !important; /* 120px → safe space below fixed navbar */
+    }
+
+    @media (min-width: 1024px) {
+        main {
+            padding-top: 7rem !important; /* Slightly less on large screens */
+        }
+    }
+
+    /* ────────────────────────────────────── */
+    /* FIX 2: Mobile sidebar visible above navbar */
+    /* ────────────────────────────────────── */
+    #mobile-sidebar {
+        z-index: 60 !important; /* Above navbar (z-50) */
+    }
+    #mobile-sidebar .absolute {
+        z-index: 60;
+    }
+
+    /* ────────────────────────────────────── */
+    /* FIX 3: Indicators / Drawing / Volume buttons overflow fix */
+    /* ────────────────────────────────────── */
+    .chart-controls-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        scrollbar-width: none;
+    }
+    .chart-controls-right::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Apply the fix to the actual container */
+    @media (max-width: 1024px) {
+        .chart-controls-right {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .chart-controls-right::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    /* Use this class in HTML for the right-side controls */
+    /* In your HTML, wrap the three buttons like this:
+         <div class="chart-controls-right">
+             <button id="indicators-dropdown">...</button>
+             <button id="drawing-tools-dropdown">...</button>
+             <button id="toggle-volume">...</button>
+         </div>
+    */
+
+    /* ────────────────────────────────────── */
+/* Extra breathing room for chart header on mobile */
+/* ────────────────────────────────────── */
+@media (max-width: 768px) {
+    /* This is the container that holds "BTC/USDT Chart" + price */
+    main .mb-6 {
+        margin-top: 2rem !important;   /* pushes everything down */
+    }
+    
+    /* Or target even more specifically if you prefer */
+    main .flex-col.md\\:flex-row {
+        margin-top: 2.5rem;
+        padding-top: 1rem;
+    }
+    
+    /* Optional: also increase the top padding of <main> a bit more on very small phones */
+    main {
+        padding-top: 8rem !important;   /* was ~7.5rem → now 9rem (~144px) on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        padding-top: 9rem !important;  /* extra safe on iPhone SE / small Android */
+    }
+    
+    main .mb-6 {
+        margin-top: 3rem !important;
+    }
+}
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="dashboard.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="dashboard.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="balances.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="#chart" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Charts
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Center: Symbol Selector -->
+            <div class="flex-1 max-w-md mx-4 hidden lg:block">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                            <i class="fab fa-bitcoin text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">BTC/USDT</div>
+                            <div class="text-sm text-gray-400">Spot</div>
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        <select id="symbol-selector" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-2 px-4 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <option value="BTCUSDT">BTC/USDT</option>
+                            <option value="ETHUSDT">ETH/USDT</option>
+                            <option value="SOLUSDT">SOL/USDT</option>
+                            <option value="ADAUSDT">ADA/USDT</option>
+                            <option value="DOTUSDT">DOT/USDT</option>
+                            <option value="AVAXUSDT">AVAX/USDT</option>
+                            <option value="LINKUSDT">LINK/USDT</option>
+                            <option value="DOGEUSDT">DOGE/USDT</option>
+                        </select>
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: User & Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Chart Type Toggle -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <button id="chart-type-candle" class="chart-type-btn active">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Candles
+                    </button>
+                    <button id="chart-type-line" class="chart-type-btn">
+                        <i class="fas fa-chart-line mr-2"></i> Line
+                    </button>
+                    <button id="chart-type-area" class="chart-type-btn">
+                        <i class="fas fa-chart-area mr-2"></i> Area
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="relative">
+                    <a href="profile.html" class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                            <span class="font-bold">DT</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">Demo Trader</div>
+                            <div class="text-xs text-gray-400">Professional</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Symbol Selector -->
+        <div class="mt-3 lg:hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                        <i class="fab fa-bitcoin text-white"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold">BTC/USDT</div>
+                        <div class="text-sm text-gray-400">Spot • 1h Chart</div>
+                    </div>
+                </div>
+                <button id="mobile-symbol-selector" class="text-blue-400 hover:text-blue-300">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            <div class="p-6 border-b border-gray-800">
+                <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button><br>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    <!-- <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button> -->
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="balances.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="#chart" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Charts</span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="profile.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-user w-5"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-key w-5"></i>
+                            <span>API Keys</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content - Adjusted padding to prevent navbar overlap -->
+    <main class="pt-24 pb-16 px-4 md:px-6" id="chart">
+        <div class="max-w-screen-2xl mx-auto">
+            <!-- Chart Header -->
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center space-x-4 mb-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                                    <i class="fab fa-bitcoin text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl md:text-3xl font-bold">BTC/USDT Chart</h1>
+                                    <div class="flex items-center space-x-3 text-gray-400">
+                                        <span>Spot Trading</span>
+                                        <span class="hidden md:inline">•</span>
+                                        <span class="hidden md:inline">Binance</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden md:block">
+                                <div class="text-3xl font-bold" id="current-price">$42,856.32</div>
+                                <div class="price-up text-sm font-medium mt-1" id="price-change">+2.41% (+$1,008.45)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                        <div class="hidden md:block text-right">
+                            <div class="text-sm text-gray-400">Last Updated</div>
+                            <div class="font-mono font-bold" id="last-updated">00:00:00 UTC</div>
+                        </div>
+                        <button id="toggle-fullscreen" class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-expand mr-2"></i> Fullscreen
+                        </button>
+                        <button id="refresh-chart" class="trading-btn trading-btn-primary">
+                            <i class="fas fa-sync-alt mr-2"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mobile Price Display -->
+                <div class="md:hidden glass rounded-xl p-4 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold" id="mobile-current-price">$42,856.32</div>
+                            <div class="price-up text-sm font-medium mt-1" id="mobile-price-change">+2.41% (+$1,008.45)</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-400">24h High</div>
+                            <div class="font-bold">$43,210.45</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Controls -->
+                <div class="glass rounded-xl p-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <!-- Left: Timeframes -->
+                        <div class="flex flex-wrap gap-2">
+                            <button class="timeframe-btn active" data-tf="1m">1m</button>
+                            <button class="timeframe-btn" data-tf="5m">5m</button>
+                            <button class="timeframe-btn" data-tf="15m">15m</button>
+                            <button class="timeframe-btn" data-tf="1h">1h</button>
+                            <button class="timeframe-btn" data-tf="4h">4h</button>
+                            <button class="timeframe-btn" data-tf="1d">1d</button>
+                            <button class="timeframe-btn" data-tf="1w">1w</button>
+                            <button class="timeframe-btn" data-tf="1M">1M</button>
+                        </div>
+                        
+                        <!-- Center: Chart Type (Mobile) -->
+                        <div class="flex md:hidden items-center justify-center gap-2">
+                            <button id="mobile-chart-type-candle" class="chart-type-btn active">
+                                <i class="fas fa-chart-candlestick"></i>
+                            </button>
+                            <button id="mobile-chart-type-line" class="chart-type-btn">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button id="mobile-chart-type-area" class="chart-type-btn">
+                                <i class="fas fa-chart-area"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Right: Indicators & Tools -->
+                        <div class="chart-controls-right">
+    <div class="relative">
+        <button id="indicators-dropdown" class="trading-btn trading-btn-secondary">
+            Indicators
+        </button>
+    </div>
+    <div class="relative">
+        <button id="drawing-tools-dropdown" class="trading-btn trading-btn-secondary">
+            Drawing
+        </button>
+    </div>
+    <button id="toggle-volume" class="trading-btn trading-btn-secondary active">
+        Volume
+    </button>
+</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Chart Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Chart Container (3/4 width) -->
+                <div class="lg:col-span-3">
+                    <div class="glass rounded-2xl p-4 animate-slide-in-left">
+                        <!-- Chart Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-sm text-gray-400">
+                                    <span id="chart-period">1h</span> • 
+                                    <span id="chart-range">7 Dec, 12:00 - 8 Dec, 12:00</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button id="zoom-in" class="drawing-tool-btn">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button id="zoom-out" class="drawing-tool-btn">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <button id="reset-chart" class="drawing-tool-btn">
+                                    <i class="fas fa-home"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Canvas -->
+                        <div class="chart-container relative">
+                            <!-- Crosshair Info -->
+                            <div class="crosshair-info glass-dark rounded-lg p-3 hidden" id="crosshair-info">
+                                <div class="text-sm text-gray-400">Crosshair</div>
+                                <div class="font-bold" id="crosshair-price">$0.00</div>
+                                <div class="text-xs text-gray-400" id="crosshair-time">Time: --:--</div>
+                            </div>
+                            
+                            <!-- Chart Loading -->
+                            <div class="chart-loading hidden" id="chart-loading">
+                                <div class="text-center">
+                                    <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                    <div class="text-gray-300">Loading chart data...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Div -->
+                            <div id="trading-chart" class="w-full h-full"></div>
+                        </div>
+                        
+                        <!-- Chart Footer -->
+                        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">Open</div>
+                                <div class="font-bold" id="current-open">$42,240.50</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">High</div>
+                                <div class="font-bold" id="current-high">$43,210.45</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">Low</div>
+                                <div class="font-bold" id="current-low">$41,895.67</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400 text-sm">Volume</div>
+                                <div class="font-bold" id="current-volume">28.5K BTC</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Drawing Tools Panel -->
+                    <div id="drawing-tools-panel" class="glass rounded-2xl p-4 mt-4 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold">Drawing Tools</h3>
+                            <button id="close-drawing-tools" class="text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
+                            <button class="drawing-tool-btn" data-tool="line">
+                                <i class="fas fa-slash"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="ray">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="horizontal">
+                                <i class="fas fa-arrows-alt-h"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="vertical">
+                                <i class="fas fa-arrows-alt-v"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="rectangle">
+                                <i class="far fa-square"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="circle">
+                                <i class="far fa-circle"></i>
+                            </button>
+                            <button class="drawing-tool-btn" data-tool="fibonacci">
+                                <i class="fas fa-wave-square"></i>
+                            </button>
+                            <button class="drawing-tool-btn active" data-tool="clear">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-400">
+                            Click and drag on the chart to draw. Click "Clear" to remove all drawings.
+                        </div>
+                    </div>
+                    
+                    <!-- Indicators Panel -->
+                    <div id="indicators-panel" class="glass rounded-2xl p-4 mt-4 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold">Technical Indicators</h3>
+                            <button id="close-indicators" class="text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button class="indicator-btn" data-indicator="ma">
+                                <i class="fas fa-chart-line mr-2"></i> MA
+                            </button>
+                            <button class="indicator-btn" data-indicator="ema">
+                                <i class="fas fa-chart-line mr-2"></i> EMA
+                            </button>
+                            <button class="indicator-btn" data-indicator="bb">
+                                <i class="fas fa-chart-area mr-2"></i> Bollinger
+                            </button>
+                            <button class="indicator-btn" data-indicator="rsi">
+                                <i class="fas fa-wave-square mr-2"></i> RSI
+                            </button>
+                            <button class="indicator-btn" data-indicator="macd">
+                                <i class="fas fa-chart-bar mr-2"></i> MACD
+                            </button>
+                            <button class="indicator-btn" data-indicator="stoch">
+                                <i class="fas fa-chart-line mr-2"></i> Stochastic
+                            </button>
+                            <button class="indicator-btn" data-indicator="volume">
+                                <i class="fas fa-chart-bar mr-2"></i> Volume
+                            </button>
+                            <button class="indicator-btn active" data-indicator="clear">
+                                <i class="fas fa-trash-alt mr-2"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-400">
+                            Indicators will be displayed on the chart. Click "Clear All" to remove.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Side Panel (1/4 width) -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Order Book -->
+                    <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.1s">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold">Order Book</h3>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2">
+                            <!-- Bids (Buy Orders) -->
+                            <div class="text-sm text-gray-400 mb-2">Bids (Buy)</div>
+                            <div class="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-green-400">$42,855.32</span>
+                                    <span>2.45</span>
+                                    <span class="text-gray-400">$104,895.53</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-green-400">$42,854.21</span>
+                                    <span>1.28</span>
+                                    <span class="text-gray-400">$54,853.39</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-green-400">$42,853.15</span>
+                                    <span>3.42</span>
+                                    <span class="text-gray-400">$146,617.77</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-green-400">$42,852.08</span>
+                                    <span>0.85</span>
+                                    <span class="text-gray-400">$36,424.27</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-green-400">$42,850.92</span>
+                                    <span>1.56</span>
+                                    <span class="text-gray-400">$66,847.44</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Market Price -->
+                            <div class="my-3 py-2 border-t border-b border-gray-800 text-center">
+                                <div class="text-2xl font-bold">$42,856.32</div>
+                                <div class="text-sm text-gray-400">Market Price</div>
+                            </div>
+                            
+                            <!-- Asks (Sell Orders) -->
+                            <div class="text-sm text-gray-400 mb-2">Asks (Sell)</div>
+                            <div class="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-red-400">$42,857.45</span>
+                                    <span>1.24</span>
+                                    <span class="text-gray-400">$53,143.24</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-red-400">$42,858.63</span>
+                                    <span>2.18</span>
+                                    <span class="text-gray-400">$93,431.81</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-red-400">$42,859.78</span>
+                                    <span>0.92</span>
+                                    <span class="text-gray-400">$39,430.99</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-red-400">$42,860.92</span>
+                                    <span>1.45</span>
+                                    <span class="text-gray-400">$62,148.33</span>
+                                </div>
+                                <div class="flex justify-between text-sm hover:bg-gray-800/30 p-1 rounded">
+                                    <span class="text-red-400">$42,862.15</span>
+                                    <span>3.28</span>
+                                    <span class="text-gray-400">$140,587.85</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trade Panel -->
+                    <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold">Quick Trade</h3>
+                            <div class="flex items-center space-x-2">
+                                <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                    Spot
+                                </button>
+                                <button class="text-gray-400 hover:text-white text-sm">
+                                    Futures
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Type -->
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-400 mb-2">Order Type</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="trading-btn trading-btn-secondary text-sm active">Limit</button>
+                                <button class="trading-btn trading-btn-secondary text-sm">Market</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Buy/Sell Buttons -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                <i class="fas fa-arrow-up mr-2"></i> Buy
+                            </button>
+                            <button class="trading-btn trading-btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                <i class="fas fa-arrow-down mr-2"></i> Sell
+                            </button>
+                        </div>
+                        
+                        <!-- Order Form -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm text-gray-400 mb-1 block">Price (USDT)</label>
+                                <div class="relative">
+                                    <input type="text" value="42,856.32" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-right">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm text-gray-400 mb-1 block">Amount (BTC)</label>
+                                <div class="relative">
+                                    <input type="text" value="0.1" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-right">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">฿</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-2">
+                                <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">25%</button>
+                                <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">50%</button>
+                                <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">75%</button>
+                                <button class="bg-gray-800/50 text-gray-300 py-2 rounded text-sm">100%</button>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-gray-800">
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-gray-400">Total</span>
+                                    <span class="font-bold">$4,285.63</span>
+                                </div>
+                                <button class="w-full trading-btn trading-btn-primary py-3">
+                                    Place Buy Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Trades -->
+                    <div class="glass rounded-2xl p-4 animate-slide-in-right" style="animation-delay: 0.3s">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold">Recent Trades</h3>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2 max-h-52 overflow-y-auto custom-scrollbar pr-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">$42,856.32</span>
+                                <span>0.0245</span>
+                                <span class="text-gray-400">12:45:23</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-red-400">$42,855.18</span>
+                                <span>0.1284</span>
+                                <span class="text-gray-400">12:45:21</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">$42,856.45</span>
+                                <span>0.0452</span>
+                                <span class="text-gray-400">12:45:18</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">$42,857.12</span>
+                                <span>0.0923</span>
+                                <span class="text-gray-400">12:45:15</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-red-400">$42,855.89</span>
+                                <span>0.2154</span>
+                                <span class="text-gray-400">12:45:12</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">$42,856.78</span>
+                                <span>0.0321</span>
+                                <span class="text-gray-400">12:45:09</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-red-400">$42,855.42</span>
+                                <span>0.1845</span>
+                                <span class="text-gray-400">12:45:06</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">$42,856.95</span>
+                                <span>0.0568</span>
+                                <span class="text-gray-400">12:45:03</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart Statistics -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Technical Indicators -->
+                <div class="glass rounded-2xl p-4">
+                    <h3 class="text-lg font-bold mb-4">Technical Indicators</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">RSI (14)</span>
+                                <span class="font-bold text-green-400">62.45</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500" style="width: 62.45%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>Oversold</span>
+                                <span>Neutral</span>
+                                <span>Overbought</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">MACD</span>
+                                <span class="font-bold text-green-400">+124.52</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Signal: 118.45 • Histogram: +6.07</div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Stochastic</span>
+                                <span class="font-bold text-yellow-400">78.42</span>
+                            </div>
+                            <div class="text-xs text-gray-400">K: 78.42 • D: 72.18</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Moving Averages -->
+                <div class="glass rounded-2xl p-4">
+                    <h3 class="text-lg font-bold mb-4">Moving Averages</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="text-sm">MA (7)</span>
+                            </div>
+                            <div>
+                                <span class="font-bold">$42,245.18</span>
+                                <span class="text-green-400 text-sm ml-2">+1.45%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                <span class="text-sm">MA (25)</span>
+                            </div>
+                            <div>
+                                <span class="font-bold">$41,845.32</span>
+                                <span class="text-green-400 text-sm ml-2">+2.42%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm">MA (99)</span>
+                            </div>
+                            <div>
+                                <span class="font-bold">$40,125.48</span>
+                                <span class="text-green-400 text-sm ml-2">+6.81%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Support & Resistance -->
+                <div class="glass rounded-2xl p-4">
+                    <h3 class="text-lg font-bold mb-4">Support & Resistance</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Resistance 3</span>
+                                <span class="font-bold text-red-400">$43,450.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Resistance 2</span>
+                                <span class="font-bold text-red-400">$43,125.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Resistance 1</span>
+                                <span class="font-bold text-red-400">$42,950.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                        
+                        <div class="py-2 border-t border-b border-gray-800 text-center">
+                            <div class="text-lg font-bold">$42,856.32</div>
+                            <div class="text-xs text-gray-400">Current Price</div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Support 1</span>
+                                <span class="font-bold text-green-400">$42,450.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Support 2</span>
+                                <span class="font-bold text-green-400">$42,125.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-400">Support 3</span>
+                                <span class="font-bold text-green-400">$41,850.00</span>
+                            </div>
+                            <div class="h-1 bg-gray-800 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="dashboard.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="balances.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="#chart" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-chart-line text-lg mb-1"></i>
+                <span class="text-xs">Chart</span>
+            </a>
+            <button id="mobile-menu-bottom" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-bars text-lg mb-1"></i>
+                <span class="text-xs">Menu</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuBottom = document.getElementById('mobile-menu-bottom');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const refreshButton = document.getElementById('refresh-chart');
+        const lastUpdated = document.getElementById('last-updated');
+        const toggleFullscreen = document.getElementById('toggle-fullscreen');
+        const symbolSelector = document.getElementById('symbol-selector');
+        const chartTypeCandle = document.getElementById('chart-type-candle');
+        const chartTypeLine = document.getElementById('chart-type-line');
+        const chartTypeArea = document.getElementById('chart-type-area');
+        const mobileChartTypeCandle = document.getElementById('mobile-chart-type-candle');
+        const mobileChartTypeLine = document.getElementById('mobile-chart-type-line');
+        const mobileChartTypeArea = document.getElementById('mobile-chart-type-area');
+        const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+        const toggleVolume = document.getElementById('toggle-volume');
+        const zoomIn = document.getElementById('zoom-in');
+        const zoomOut = document.getElementById('zoom-out');
+        const resetChart = document.getElementById('reset-chart');
+        const indicatorsDropdown = document.getElementById('indicators-dropdown');
+        const drawingToolsDropdown = document.getElementById('drawing-tools-dropdown');
+        const indicatorsPanel = document.getElementById('indicators-panel');
+        const drawingToolsPanel = document.getElementById('drawing-tools-panel');
+        const closeIndicators = document.getElementById('close-indicators');
+        const closeDrawingTools = document.getElementById('close-drawing-tools');
+        const chartLoading = document.getElementById('chart-loading');
+        const crosshairInfo = document.getElementById('crosshair-info');
+        const crosshairPrice = document.getElementById('crosshair-price');
+        const crosshairTime = document.getElementById('crosshair-time');
+        
+        // Chart Variables
+        let chart = null;
+        let candleSeries = null;
+        let lineSeries = null;
+        let areaSeries = null;
+        let volumeSeries = null;
+        let currentChartType = 'candle';
+        let currentTimeframe = '1h';
+        let chartData = [];
+        let volumeData = [];
+        let indicators = new Set();
+        let drawings = [];
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        mobileMenuBottom.addEventListener('click', toggleMobileMenu);
+        closeSidebar.addEventListener('click', toggleMobileMenu);
+        sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        
+        // Update Server Time
+        function updateServerTime() {
+            const now = new Date();
+            const timeString = now.toUTCString().split(' ')[4];
+            lastUpdated.textContent = timeString + ' UTC';
+        }
+        
+        setInterval(updateServerTime, 1000);
+        updateServerTime();
+        
+        // Generate Sample Data
+        function generateCandleData(count = 100) {
+            const data = [];
+            let time = Date.now() - count * 3600000; // Start from count hours ago
+            let price = 42000;
+            
+            for (let i = 0; i < count; i++) {
+                const open = price;
+                const close = open + (Math.random() - 0.5) * 400;
+                const high = Math.max(open, close) + Math.random() * 200;
+                const low = Math.min(open, close) - Math.random() * 200;
+                const volume = 100 + Math.random() * 900;
+                
+                data.push({
+                    time: time / 1000,
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close,
+                    volume: volume
+                });
+                
+                price = close;
+                time += 3600000; // Add 1 hour
+            }
+            
+            return data;
+        }
+        
+        // Initialize Chart
+        function initChart() {
+            const chartContainer = document.getElementById('trading-chart');
+            
+            // Create chart
+            chart = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: chartContainer.clientHeight,
+                layout: {
+                    background: { color: 'transparent' },
+                    textColor: '#D9D9D9',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                    vertLine: {
+                        width: 1,
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        style: 2,
+                        labelBackgroundColor: '#3b82f6',
+                    },
+                    horzLine: {
+                        width: 1,
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        style: 2,
+                        labelBackgroundColor: '#3b82f6',
+                    },
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    scaleMargins: {
+                        top: 0.2,
+                        bottom: 0.1,
+                    },
+                },
+                timeScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    timeVisible: true,
+                    secondsVisible: false,
+                    fixLeftEdge: true,
+                    fixRightEdge: true,
+                },
+                watermark: {
+                    color: 'rgba(255, 255, 255, 0.05)',
+                    visible: true,
+                    text: 'CryptoFutures Pro',
+                    fontSize: 24,
+                    horzAlign: 'center',
+                    vertAlign: 'center',
+                },
+            });
+            
+            // Generate sample data
+            chartData = generateCandleData(100);
+            
+            // Create candle series
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#10b981',
+                downColor: '#ef4444',
+                borderUpColor: '#10b981',
+                borderDownColor: '#ef4444',
+                wickUpColor: '#10b981',
+                wickDownColor: '#ef4444',
+            });
+            
+            // Create line series (hidden by default)
+            lineSeries = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+                lineType: 2, // Smooth line
+            });
+            
+            // Create area series (hidden by default)
+            areaSeries = chart.addAreaSeries({
+                topColor: 'rgba(59, 130, 246, 0.4)',
+                bottomColor: 'rgba(59, 130, 246, 0.05)',
+                lineColor: 'rgba(59, 130, 246, 0.8)',
+                lineWidth: 2,
+            });
+            
+            // Create volume series
+            volumeData = chartData.map(d => ({
+                time: d.time,
+                value: d.volume,
+                color: d.close >= d.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)',
+            }));
+            
+            volumeSeries = chart.addHistogramSeries({
+                color: '#888',
+                priceFormat: {
+                    type: 'volume',
+                },
+                priceScaleId: 'volume',
+                scaleMargins: {
+                    top: 0.8,
+                    bottom: 0,
+                },
+            });
+            
+            // Set data
+            candleSeries.setData(chartData);
+            lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+            areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+            volumeSeries.setData(volumeData);
+            
+            // Update price display with latest data
+            const latestCandle = chartData[chartData.length - 1];
+            updatePriceDisplay(latestCandle.close, latestCandle.close - chartData[chartData.length - 2].close);
+            
+            // Crosshair move event
+            chart.subscribeCrosshairMove(param => {
+                if (param.time) {
+                    const price = param.seriesPrices.get(candleSeries) || 
+                                 param.seriesPrices.get(lineSeries) || 
+                                 param.seriesPrices.get(areaSeries);
+                    
+                    if (price) {
+                        crosshairInfo.classList.remove('hidden');
+                        crosshairPrice.textContent = `$${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                        
+                        const date = new Date(param.time * 1000);
+                        crosshairTime.textContent = `Time: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                        
+                        // Position crosshair info
+                        const containerRect = chartContainer.getBoundingClientRect();
+                        crosshairInfo.style.left = `${param.point.x + 10}px`;
+                        crosshairInfo.style.top = `${param.point.y + 10}px`;
+                    }
+                } else {
+                    crosshairInfo.classList.add('hidden');
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                chart.applyOptions({
+                    width: chartContainer.clientWidth,
+                    height: chartContainer.clientHeight,
+                });
+            });
+            
+            // Hide loading overlay
+            setTimeout(() => {
+                chartLoading.classList.add('hidden');
+            }, 500);
+        }
+        
+        // Update Price Display
+        function updatePriceDisplay(price, change) {
+            const priceElements = [
+                document.getElementById('current-price'),
+                document.getElementById('mobile-current-price')
+            ];
+            
+            const changeElements = [
+                document.getElementById('price-change'),
+                document.getElementById('mobile-price-change')
+            ];
+            
+            const changePercent = (change / (price - change)) * 100;
+            const isPositive = change >= 0;
+            
+            priceElements.forEach(el => {
+                if (el) el.textContent = `$${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            });
+            
+            changeElements.forEach(el => {
+                if (el) {
+                    el.textContent = `${isPositive ? '+' : ''}${changePercent.toFixed(2)}% (${isPositive ? '+' : ''}$${Math.abs(change).toFixed(2)})`;
+                    el.className = isPositive ? 'price-up text-sm font-medium mt-1' : 'price-down text-sm font-medium mt-1';
+                }
+            });
+        }
+        
+        // Chart Type Switching
+        function setChartType(type) {
+            currentChartType = type;
+            
+            // Update button states
+            chartTypeCandle.classList.toggle('active', type === 'candle');
+            chartTypeLine.classList.toggle('active', type === 'line');
+            chartTypeArea.classList.toggle('active', type === 'area');
+            mobileChartTypeCandle.classList.toggle('active', type === 'candle');
+            mobileChartTypeLine.classList.toggle('active', type === 'line');
+            mobileChartTypeArea.classList.toggle('active', type === 'area');
+            
+            // Show/hide series
+            candleSeries.applyOptions({ visible: type === 'candle' });
+            lineSeries.applyOptions({ visible: type === 'line' });
+            areaSeries.applyOptions({ visible: type === 'area' });
+        }
+        
+        // Timeframe Switching
+        function setTimeframe(tf) {
+            currentTimeframe = tf;
+            
+            // Update button states
+            timeframeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tf') === tf);
+            });
+            
+            // Update chart period display
+            document.getElementById('chart-period').textContent = tf;
+            
+            // In a real app, this would fetch new data for the timeframe
+            showNotification(`Switched to ${tf} timeframe`, 'info');
+        }
+        
+        // Refresh Chart
+        refreshButton.addEventListener('click', function() {
+            this.classList.add('animate-spin');
+            chartLoading.classList.remove('hidden');
+            
+            // Simulate API call
+            setTimeout(() => {
+                this.classList.remove('animate-spin');
+                chartLoading.classList.add('hidden');
+                
+                // Generate new data
+                chartData = generateCandleData(100);
+                volumeData = chartData.map(d => ({
+                    time: d.time,
+                    value: d.volume,
+                    color: d.close >= d.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)',
+                }));
+                
+                // Update series
+                candleSeries.setData(chartData);
+                lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                volumeSeries.setData(volumeData);
+                
+                // Update price
+                const latestCandle = chartData[chartData.length - 1];
+                updatePriceDisplay(latestCandle.close, latestCandle.close - chartData[chartData.length - 2].close);
+                
+                showNotification('Chart data refreshed', 'success');
+            }, 1000);
+        });
+        
+        // Fullscreen Toggle
+        toggleFullscreen.addEventListener('click', function() {
+            const chartContainer = document.querySelector('.chart-container');
+            
+            if (!document.fullscreenElement) {
+                if (chartContainer.requestFullscreen) {
+                    chartContainer.requestFullscreen();
+                } else if (chartContainer.webkitRequestFullscreen) {
+                    chartContainer.webkitRequestFullscreen();
+                } else if (chartContainer.msRequestFullscreen) {
+                    chartContainer.msRequestFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-compress mr-2"></i> Exit Fullscreen';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-expand mr-2"></i> Fullscreen';
+            }
+        });
+        
+        // Exit fullscreen when user presses ESC
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                toggleFullscreen.innerHTML = '<i class="fas fa-expand mr-2"></i> Fullscreen';
+            }
+        });
+        
+        // Chart Type Events
+        chartTypeCandle.addEventListener('click', () => setChartType('candle'));
+        chartTypeLine.addEventListener('click', () => setChartType('line'));
+        chartTypeArea.addEventListener('click', () => setChartType('area'));
+        mobileChartTypeCandle.addEventListener('click', () => setChartType('candle'));
+        mobileChartTypeLine.addEventListener('click', () => setChartType('line'));
+        mobileChartTypeArea.addEventListener('click', () => setChartType('area'));
+        
+        // Timeframe Events
+        timeframeButtons.forEach(btn => {
+            btn.addEventListener('click', () => setTimeframe(btn.getAttribute('data-tf')));
+        });
+        
+        // Volume Toggle
+        toggleVolume.addEventListener('click', function() {
+            this.classList.toggle('active');
+            volumeSeries.applyOptions({ visible: this.classList.contains('active') });
+        });
+        
+        // Zoom Controls
+        zoomIn.addEventListener('click', () => {
+            chart.timeScale().applyOptions({ barSpacing: chart.timeScale().options().barSpacing * 1.2 });
+        });
+        
+        zoomOut.addEventListener('click', () => {
+            chart.timeScale().applyOptions({ barSpacing: chart.timeScale().options().barSpacing / 1.2 });
+        });
+        
+        resetChart.addEventListener('click', () => {
+            chart.timeScale().fitContent();
+        });
+        
+        // Indicators Panel
+        indicatorsDropdown.addEventListener('click', () => {
+            indicatorsPanel.classList.toggle('hidden');
+            drawingToolsPanel.classList.add('hidden');
+        });
+        
+        closeIndicators.addEventListener('click', () => {
+            indicatorsPanel.classList.add('hidden');
+        });
+        
+        // Drawing Tools Panel
+        drawingToolsDropdown.addEventListener('click', () => {
+            drawingToolsPanel.classList.toggle('hidden');
+            indicatorsPanel.classList.add('hidden');
+        });
+        
+        closeDrawingTools.addEventListener('click', () => {
+            drawingToolsPanel.classList.add('hidden');
+        });
+        
+        // Symbol Selector
+        symbolSelector.addEventListener('change', function() {
+            const symbol = this.value;
+            const symbolName = this.options[this.selectedIndex].text;
+            
+            // Update header
+            document.querySelector('h1').textContent = `${symbolName} Chart`;
+            
+            // Show loading
+            chartLoading.classList.remove('hidden');
+            
+            // Simulate symbol change
+            setTimeout(() => {
+                // Generate new data for different symbol
+                chartData = generateCandleData(100);
+                volumeData = chartData.map(d => ({
+                    time: d.time,
+                    value: d.volume,
+                    color: d.close >= d.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)',
+                }));
+                
+                // Update series
+                candleSeries.setData(chartData);
+                lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+                volumeSeries.setData(volumeData);
+                
+                // Update price
+                const latestCandle = chartData[chartData.length - 1];
+                updatePriceDisplay(latestCandle.close, latestCandle.close - chartData[chartData.length - 2].close);
+                
+                chartLoading.classList.add('hidden');
+                showNotification(`Switched to ${symbolName}`, 'success');
+            }, 1000);
+        });
+        
+        // Simulate Price Updates
+        function simulatePriceUpdates() {
+            setInterval(() => {
+                if (chartData.length > 0) {
+                    const lastCandle = chartData[chartData.length - 1];
+                    const newClose = lastCandle.close + (Math.random() - 0.5) * 50;
+                    const newHigh = Math.max(lastCandle.high, newClose);
+                    const newLow = Math.min(lastCandle.low, newClose);
+                    const newVolume = lastCandle.volume * (0.9 + Math.random() * 0.2);
+                    
+                    const updatedCandle = {
+                        time: Date.now() / 1000,
+                        open: lastCandle.close,
+                        high: newHigh,
+                        low: newLow,
+                        close: newClose,
+                        volume: newVolume
+                    };
+                    
+                    // Update data arrays
+                    chartData.push(updatedCandle);
+                    if (chartData.length > 200) chartData.shift();
+                    
+                    volumeData.push({
+                        time: updatedCandle.time,
+                        value: updatedCandle.volume,
+                        color: updatedCandle.close >= updatedCandle.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)',
+                    });
+                    if (volumeData.length > 200) volumeData.shift();
+                    
+                    // Update series
+                    candleSeries.update(updatedCandle);
+                    lineSeries.update({ time: updatedCandle.time, value: updatedCandle.close });
+                    areaSeries.update({ time: updatedCandle.time, value: updatedCandle.close });
+                    volumeSeries.update(volumeData[volumeData.length - 1]);
+                    
+                    // Update price display
+                    updatePriceDisplay(updatedCandle.close, updatedCandle.close - lastCandle.close);
+                }
+            }, 5000); // Update every 5 seconds
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chart
+            initChart();
+            
+            // Start price updates simulation
+            simulatePriceUpdates();
+            
+            // Update chart range display
+            const now = new Date();
+            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            document.getElementById('chart-range').textContent = 
+                `${yesterday.toLocaleDateString([], {day: 'numeric', month: 'short'})}, ${yesterday.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ` +
+                `${now.toLocaleDateString([], {day: 'numeric', month: 'short'})}, ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            
+            // Add click effects to trading buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Demo notification
+            setTimeout(() => {
+                showNotification('Trading chart loaded. Use drawing tools and indicators for analysis.', 'success');
+            }, 1000);
+        });
+        
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Expose to global scope for buttons
+        window.showNotification = showNotification;
+    </script>
+</body>
+</html>

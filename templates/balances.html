@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Balances | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- ApexCharts for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <!-- Custom Styles -->
+  <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+        --navbar-height: 76px; /* Height of the fixed top navbar */
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* === FIXED: Content starts below navbar === */
+    body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        overflow-x: hidden;
+        padding-top: var(--navbar-height); /* Critical fix */
+    }
+
+    main {
+        min-height: calc(100vh - var(--navbar-height));
+        padding-bottom: 80px; /* Extra space for mobile bottom bar */
+    }
+
+    /* On mobile, add extra padding when bottom nav exists */
+    @media (max-width: 1024px) {
+        main {
+            padding-bottom: 90px;
+        }
+    }
+
+    /* === Rest of your original beautiful styles (unchanged except minor tweaks) === */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes pulse-subtle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+    .animate-shimmer { animation: shimmer 2s infinite linear; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%); background-size: 1000px 100%; }
+
+    /* Glass morphism */
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-dark {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Custom scrollbar */
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(59, 130, 246, 0.5) rgba(255, 255, 255, 0.05); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+
+    /* Gradient text */
+    .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /* Tabs */
+    .tab-active {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-bottom: 2px solid #3b82f6;
+    }
+
+    /* Price indicators */
+    .price-up { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .price-down { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+    /* Badges & Progress */
+    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+    .progress-bar { height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+
+    /* Trading buttons */
+    .trading-btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .trading-btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    .trading-btn-primary:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+    .trading-btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .trading-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Skeleton */
+    .skeleton {
+        background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .mobile-stack { flex-direction: column !important; }
+        .mobile-full { width: 100% !important; }
+        .mobile-text-center { text-align: center !important; }
+        .mobile-hide { display: none !important; }
+    }
+    
+    @media (max-width: 540px) and (max-height: 720px) {
+        .foldable-padding { padding: 0.75rem !important; }
+        .foldable-text-sm { font-size: 0.875rem !important; }
+    }
+    /* ——————————————————————— */
+/* MOBILE SIDEBAR & TOASTS – ALWAYS ON TOP (Mobile Fix) */
+/* ——————————————————————— */
+
+/* Mobile Sidebar (highest priority on small screens) */
+#mobile-sidebar {
+    z-index: 9999 !important; /* Beats bottom nav (z-40) and everything else */
+}
+
+/* The sliding panel itself */
+#sidebar-content {
+    z-index: 10000 !important;
+}
+
+/* Backdrop */
+#sidebar-backdrop {
+    z-index: 9998 !important;
+}
+
+/* Force notifications/toasts to stay above sidebar too */
+.fixed.top-20.right-4.glass-dark,
+div[class*="fixed"][class*="top-20"][class*="right-4"] {
+    z-index: 2147483647 !important; /* Max possible – always on absolute top */
+}
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="dashboard.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="dashboard.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="#balances" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="futures_chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Futures
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right: User & Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Quick Actions -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <button class="trading-btn trading-btn-secondary text-sm">
+                        <i class="fas fa-exchange-alt mr-2"></i> Transfer
+                    </button>
+                    <button class="trading-btn trading-btn-primary text-sm">
+                        <i class="fas fa-plus mr-2"></i> Deposit
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="relative">
+                    <a href="profile.html" class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                            <span class="font-bold">DT</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">Demo Trader</div>
+                            <div class="text-xs text-gray-400">Professional</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            <div class="p-6 border-b border-gray-800">
+                <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button><br>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    <!-- <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button> -->
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#balances" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="futures_chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-candlestick w-5"></i>
+                        <span>Futures</span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="profile.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-user w-5"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-key w-5"></i>
+                            <span>API Keys</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="pt-20 pb-10 px-4 md:px-6 foldable-padding" id="balances">
+        <!-- Page Header -->
+        <div class="mb-8 animate-fade-in">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-2">Portfolio Balances</h1>
+                    <div class="flex items-center space-x-4 text-gray-400">
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse-subtle"></span>
+                            <span class="text-sm">Live Data from Binance</span>
+                        </div>
+                        <span class="hidden md:inline">•</span>
+                        <div class="text-sm">Last updated: <span id="last-updated">Just now</span></div>
+                        <button id="refresh-data" class="text-blue-400 hover:text-blue-300 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                    <div class="hidden md:block text-right">
+                        <div class="text-sm text-gray-400">Total Balance</div>
+                        <div class="text-2xl font-bold" id="total-balance">$124,856.42</div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-download mr-2"></i> Export
+                        </button>
+                        <button class="trading-btn trading-btn-primary">
+                            <i class="fas fa-exchange-alt mr-2"></i> Transfer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Balance Tabs -->
+            <div class="flex space-x-1 glass rounded-xl p-1 w-fit">
+                <button class="px-6 py-3 rounded-lg text-sm font-medium tab-active" data-tab="spot">
+                    Spot Wallet
+                </button>
+                <button class="px-6 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors" data-tab="futures">
+                    Futures Wallet
+                </button>
+                <button class="px-6 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors" data-tab="earn">
+                    Earn
+                </button>
+                <button class="px-6 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors" data-tab="history">
+                    History
+                </button>
+            </div>
+        </div>
+        
+        <!-- Balance Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Balance Card -->
+            <div class="glass rounded-2xl p-6 animate-fade-in" style="animation-delay: 0.1s">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="text-gray-400 text-sm mb-1">Total Balance</div>
+                        <div class="text-3xl font-bold">$124,856.42</div>
+                    </div>
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-wallet text-blue-400 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">24h Change</span>
+                            <span class="text-green-400 font-medium">+$2,845.32</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-green-500" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">7d Change</span>
+                            <span class="text-green-400 font-medium">+$8,421.56</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-green-500" style="width: 82%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Spot Balance Card -->
+            <div class="glass rounded-2xl p-6 animate-fade-in" style="animation-delay: 0.2s">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="text-gray-400 text-sm mb-1">Spot Balance</div>
+                        <div class="text-3xl font-bold">$42,158.24</div>
+                    </div>
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-coins text-green-400 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">Available</span>
+                            <span class="font-medium">$38,245.18</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-green-400" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">In Orders</span>
+                            <span class="font-medium">$3,913.06</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-yellow-500" style="width: 10%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Futures Balance Card -->
+            <div class="glass rounded-2xl p-6 animate-fade-in" style="animation-delay: 0.3s">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="text-gray-400 text-sm mb-1">Futures Balance</div>
+                        <div class="text-3xl font-bold">$82,698.18</div>
+                    </div>
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-chart-candlestick text-purple-400 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">Wallet Balance</span>
+                            <span class="font-medium">$82,698.18</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-purple-500" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-400">Margin Used</span>
+                            <span class="font-medium">$15,842.00</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-blue-500" style="width: 19%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Tabs -->
+        <div class="space-y-8">
+            <!-- Spot Wallet Tab -->
+            <div id="tab-spot" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-4">Spot Assets</h2>
+                    <p class="text-gray-400">Holdings across all cryptocurrencies in your spot wallet</p>
+                </div>
+                
+                <!-- Spot Balances Table -->
+                <div class="glass rounded-2xl overflow-hidden animate-slide-in-right">
+                    <!-- Table Header -->
+                    <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-800">
+                        <div class="flex-1">
+                            <div class="text-lg font-bold">Spot Balances</div>
+                            <div class="text-sm text-gray-400">Total: $42,158.24 across 12 assets</div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    placeholder="Search assets..."
+                                    class="bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 pl-10 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                >
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <button class="trading-btn trading-btn-secondary text-sm">
+                                <i class="fas fa-filter mr-2"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-left text-gray-400 text-sm border-b border-gray-800">
+                                    <th class="py-4 px-4 md:px-6 font-medium">Asset</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">Total Balance</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">Available</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">In Orders</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">BTC Value</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">USDT Value</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">24h Change</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- BTC Row -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                                <span class="font-bold text-white">B</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">Bitcoin</div>
+                                                <div class="text-sm text-gray-400">BTC</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.5248</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.4248</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.1000</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.5248</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-bold">$22,485.32</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="price-up px-3 py-1 rounded-lg text-sm font-medium">+2.41%</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- ETH Row -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                                <span class="font-bold text-white">E</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">Ethereum</div>
+                                                <div class="text-sm text-gray-400">ETH</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">8.2456</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">8.2456</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.0000</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.4321</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-bold">$18,524.68</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="price-down px-3 py-1 rounded-lg text-sm font-medium">-1.24%</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- USDT Row -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                                                <span class="font-bold text-white">U</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">Tether</div>
+                                                <div class="text-sm text-gray-400">USDT</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">1,245.68</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">1,245.68</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.00</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">0.0291</td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-bold">$1,245.68</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="text-gray-400 px-3 py-1 rounded-lg text-sm font-medium">0.00%</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Other Assets (Collapsible) -->
+                                <tr id="more-assets-row" class="hidden">
+                                    <!-- Additional rows would go here -->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Table Footer -->
+                    <div class="p-4 md:p-6 border-t border-gray-800 flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="text-sm text-gray-400 mb-4 md:mb-0">
+                            Showing 3 of 12 assets. <button id="show-all-assets" class="text-blue-400 hover:text-blue-300">Show all</button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-sm text-gray-400">
+                                Total Value: <span class="font-bold text-white">$42,158.24</span>
+                            </div>
+                            <button class="trading-btn trading-btn-secondary text-sm">
+                                <i class="fas fa-download mr-2"></i> Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Asset Distribution Chart -->
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-bold">Asset Distribution</h3>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                        <div id="asset-chart" class="h-64"></div>
+                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="text-sm font-medium">BTC</div>
+                                    <div class="text-xs text-gray-400">53.4%</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="text-sm font-medium">ETH</div>
+                                    <div class="text-xs text-gray-400">44.0%</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="text-sm font-medium">USDT</div>
+                                    <div class="text-xs text-gray-400">2.6%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="text-lg font-bold mb-6">Quick Actions</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="bg-gradient-to-br from-blue-500/10 to-blue-600/10 hover:from-blue-500/20 hover:to-blue-600/20 border border-blue-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 hover:scale-105">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-3">
+                                    <i class="fas fa-arrow-up text-white"></i>
+                                </div>
+                                <div class="font-medium">Deposit</div>
+                                <div class="text-xs text-gray-400 mt-1">Add funds</div>
+                            </button>
+                            <button class="bg-gradient-to-br from-green-500/10 to-emerald-600/10 hover:from-green-500/20 hover:to-emerald-600/20 border border-green-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 hover:scale-105">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-3">
+                                    <i class="fas fa-exchange-alt text-white"></i>
+                                </div>
+                                <div class="font-medium">Convert</div>
+                                <div class="text-xs text-gray-400 mt-1">Swap assets</div>
+                            </button>
+                            <button class="bg-gradient-to-br from-purple-500/10 to-purple-600/10 hover:from-purple-500/20 hover:to-purple-600/20 border border-purple-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 hover:scale-105">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-3">
+                                    <i class="fas fa-chart-line text-white"></i>
+                                </div>
+                                <div class="font-medium">Trade</div>
+                                <div class="text-xs text-gray-400 mt-1">Spot trading</div>
+                            </button>
+                            <button class="bg-gradient-to-br from-orange-500/10 to-orange-600/10 hover:from-orange-500/20 hover:to-orange-600/20 border border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 hover:scale-105">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-3">
+                                    <i class="fas fa-history text-white"></i>
+                                </div>
+                                <div class="font-medium">History</div>
+                                <div class="text-xs text-gray-400 mt-1">View transactions</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Futures Wallet Tab -->
+            <div id="tab-futures" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-4">Futures Wallet</h2>
+                    <p class="text-gray-400">Leveraged positions and margin information</p>
+                </div>
+                
+                <!-- Futures Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="glass rounded-2xl p-6">
+                        <div class="text-gray-400 text-sm mb-2">Wallet Balance</div>
+                        <div class="text-2xl font-bold">$82,698.18</div>
+                        <div class="text-green-400 text-sm mt-1">+3.1% today</div>
+                    </div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="text-gray-400 text-sm mb-2">Available Balance</div>
+                        <div class="text-2xl font-bold">$66,856.18</div>
+                        <div class="text-gray-400 text-sm mt-1">For new positions</div>
+                    </div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="text-gray-400 text-sm mb-2">Margin Used</div>
+                        <div class="text-2xl font-bold">$15,842.00</div>
+                        <div class="text-gray-400 text-sm mt-1">19.1% of wallet</div>
+                    </div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="text-gray-400 text-sm mb-2">Unrealized P&L</div>
+                        <div class="text-2xl font-bold text-green-400">+$1,042.56</div>
+                        <div class="text-green-400 text-sm mt-1">+2.8% today</div>
+                    </div>
+                </div>
+                
+                <!-- Positions Summary -->
+                <div class="glass rounded-2xl overflow-hidden mb-8">
+                    <div class="p-4 md:p-6 border-b border-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-lg font-bold">Active Positions</div>
+                                <div class="text-sm text-gray-400">3 open positions, 2 long, 1 short</div>
+                            </div>
+                            <button class="trading-btn trading-btn-primary text-sm">
+                                <i class="fas fa-plus mr-2"></i> New Position
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4 md:p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- BTC Position -->
+                            <div class="bg-gray-900/30 rounded-xl p-5">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                            <span class="font-bold text-white">B</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">BTC/USDT</div>
+                                            <div class="text-xs text-gray-400">Perpetual</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-green-400 font-bold">+$842.56</div>
+                                        <div class="text-green-400 text-xs">+2.8%</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                    <div>
+                                        <div class="text-gray-400">Size</div>
+                                        <div class="font-medium">0.25 BTC</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Leverage</div>
+                                        <div class="font-medium">5x</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Entry</div>
+                                        <div class="font-medium">$41,240.50</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Margin</div>
+                                        <div class="font-medium">$8,248.10</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="text-xs text-gray-400">Liq. Price: <span class="text-red-400">$38,450.20</span></div>
+                                    <div class="text-xs text-gray-400">ROE: <span class="text-green-400">10.2%</span></div>
+                                </div>
+                            </div>
+                            
+                            <!-- ETH Position -->
+                            <div class="bg-gray-900/30 rounded-xl p-5">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                            <span class="font-bold text-white">E</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">ETH/USDT</div>
+                                            <div class="text-xs text-gray-400">Perpetual</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-red-400 font-bold">-$124.32</div>
+                                        <div class="text-red-400 text-xs">-0.8%</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                    <div>
+                                        <div class="text-gray-400">Size</div>
+                                        <div class="font-medium">2.5 ETH</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Leverage</div>
+                                        <div class="font-medium">3x</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Entry</div>
+                                        <div class="font-medium">$2,280.40</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Margin</div>
+                                        <div class="font-medium">$1,900.33</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="text-xs text-gray-400">Liq. Price: <span class="text-red-400">$2,145.60</span></div>
+                                    <div class="text-xs text-gray-400">ROE: <span class="text-red-400">-6.5%</span></div>
+                                </div>
+                            </div>
+                            
+                            <!-- SOL Position -->
+                            <div class="bg-gray-900/30 rounded-xl p-5">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg flex items-center justify-center">
+                                            <span class="font-bold text-white">S</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">SOL/USDT</div>
+                                            <div class="text-xs text-gray-400">Perpetual</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-green-400 font-bold">+$324.18</div>
+                                        <div class="text-green-400 text-xs">+3.2%</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                    <div>
+                                        <div class="text-gray-400">Size</div>
+                                        <div class="font-medium">15 SOL</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Leverage</div>
+                                        <div class="font-medium">10x</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Entry</div>
+                                        <div class="font-medium">$94.20</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-400">Margin</div>
+                                        <div class="font-medium">$141.30</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="text-xs text-gray-400">Liq. Price: <span class="text-red-400">$88.40</span></div>
+                                    <div class="text-xs text-gray-400">ROE: <span class="text-green-400">229.5%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Margin Information -->
+                <div class="glass rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-6">Margin Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-gray-400">Margin Ratio</div>
+                                    <div class="text-lg font-bold text-green-400">42.5%</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill bg-gradient-to-r from-green-500 to-yellow-500" style="width: 42.5%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>0%</span>
+                                    <span>Liquidation: 80%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Account MMR</span>
+                                    <span class="font-medium">2.5%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Maintenance Margin</span>
+                                    <span class="font-medium">$6,425.80</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Position Margin</span>
+                                    <span class="font-medium">$15,842.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-gray-400">Leverage Used</div>
+                                    <div class="text-lg font-bold">5.2x</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill bg-gradient-to-r from-blue-500 to-purple-500" style="width: 52%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>1x</span>
+                                    <span>10x</span>
+                                    <span>20x</span>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Max Leverage</span>
+                                    <span class="font-medium">20x</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Isolated Margin</span>
+                                    <span class="font-medium">$10,290.43</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Cross Margin</span>
+                                    <span class="font-medium">$5,551.57</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Earn Tab -->
+            <div id="tab-earn" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-4">Earn Products</h2>
+                    <p class="text-gray-400">Grow your crypto with various earning products</p>
+                </div>
+                
+                <div class="glass rounded-2xl p-6 text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-piggy-bank text-blue-400 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Coming Soon</h3>
+                    <p class="text-gray-400 mb-6 max-w-md mx-auto">
+                        Staking, savings, and other earning products will be available soon. 
+                        We're working on integrating various DeFi protocols and lending platforms.
+                    </p>
+                    <button class="trading-btn trading-btn-primary">
+                        <i class="fas fa-bell mr-2"></i> Notify Me
+                    </button>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="tab-history" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-4">Transaction History</h2>
+                    <p class="text-gray-400">View all your deposits, withdrawals, and trades</p>
+                </div>
+                
+                <!-- History Filters -->
+                <div class="glass rounded-2xl p-4 md:p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400">All</button>
+                            <button class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white bg-gray-800/50">Deposits</button>
+                            <button class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white bg-gray-800/50">Withdrawals</button>
+                            <button class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white bg-gray-800/50">Trades</button>
+                            <button class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white bg-gray-800/50">Transfers</button>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input 
+                                    type="date"
+                                    class="bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    value="2023-12-01"
+                                >
+                            </div>
+                            <div class="text-gray-400">to</div>
+                            <div class="relative">
+                                <input 
+                                    type="date"
+                                    class="bg-gray-900/50 border border-gray-700 text-white rounded-lg py-2 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    value="2023-12-07"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History Table -->
+                <div class="glass rounded-2xl overflow-hidden">
+                    <div class="p-4 md:p-6 border-b border-gray-800">
+                        <div class="text-lg font-bold">Recent Transactions</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-left text-gray-400 text-sm border-b border-gray-800">
+                                    <th class="py-4 px-4 md:px-6 font-medium">Date</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium">Type</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium">Asset</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">Amount</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium text-right">Status</th>
+                                    <th class="py-4 px-4 md:px-6 font-medium">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Transaction 1 -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="font-medium">Dec 7, 2023</div>
+                                        <div class="text-sm text-gray-400">12:34:23 UTC</div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-arrow-up text-green-400"></i>
+                                            </div>
+                                            <span>Deposit</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full mr-2"></div>
+                                            <span>BTC</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">+0.1250</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="badge badge-success">Completed</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                            View <i class="fas fa-external-link-alt ml-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Transaction 2 -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="font-medium">Dec 6, 2023</div>
+                                        <div class="text-sm text-gray-400">18:45:12 UTC</div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-arrow-down text-red-400"></i>
+                                            </div>
+                                            <span>Withdrawal</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-2"></div>
+                                            <span>ETH</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">-2.5000</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="badge badge-success">Completed</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                            View <i class="fas fa-external-link-alt ml-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Transaction 3 -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="font-medium">Dec 5, 2023</div>
+                                        <div class="text-sm text-gray-400">14:23:45 UTC</div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-exchange-alt text-blue-400"></i>
+                                            </div>
+                                            <span>Trade</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-gradient-to-r from-gray-500 to-gray-700 rounded-full mr-2"></div>
+                                            <span>SOL</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">+15.0000</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="badge badge-success">Filled</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                            View <i class="fas fa-external-link-alt ml-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Transaction 4 -->
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="font-medium">Dec 4, 2023</div>
+                                        <div class="text-sm text-gray-400">09:12:34 UTC</div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-random text-purple-400"></i>
+                                            </div>
+                                            <span>Transfer</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-2"></div>
+                                            <span>USDT</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">+5,000.00</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="badge badge-success">Completed</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                            View <i class="fas fa-external-link-alt ml-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Transaction 5 -->
+                                <tr class="hover:bg-gray-800/30 transition-colors">
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="font-medium">Dec 3, 2023</div>
+                                        <div class="text-sm text-gray-400">22:45:12 UTC</div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-exchange-alt text-blue-400"></i>
+                                            </div>
+                                            <span>Trade</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full mr-2"></div>
+                                            <span>BTC</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6 text-right font-mono">-0.1000</td>
+                                    <td class="py-4 px-4 md:px-6 text-right">
+                                        <span class="badge badge-success">Filled</span>
+                                    </td>
+                                    <td class="py-4 px-4 md:px-6">
+                                        <button class="text-blue-400 hover:text-blue-300 text-sm">
+                                            View <i class="fas fa-external-link-alt ml-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Table Footer -->
+                    <div class="p-4 md:p-6 border-t border-gray-800 flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="text-sm text-gray-400 mb-4 md:mb-0">
+                            Showing 5 of 128 transactions
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800/50 text-gray-400 hover:text-white">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">1</button>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800/50 text-gray-400 hover:text-white">2</button>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800/50 text-gray-400 hover:text-white">3</button>
+                            <span class="text-gray-400">...</span>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800/50 text-gray-400 hover:text-white">12</button>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800/50 text-gray-400 hover:text-white">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="dashboard.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="#balances" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="futures_chart.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-chart-candlestick text-lg mb-1"></i>
+                <span class="text-xs">Futures</span>
+            </a>
+            <button id="mobile-menu-bottom" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-bars text-lg mb-1"></i>
+                <span class="text-xs">Menu</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuBottom = document.getElementById('mobile-menu-bottom');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const refreshButton = document.getElementById('refresh-data');
+        const lastUpdated = document.getElementById('last-updated');
+        const totalBalance = document.getElementById('total-balance');
+        const showAllAssets = document.getElementById('show-all-assets');
+        const moreAssetsRow = document.getElementById('more-assets-row');
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        mobileMenuBottom.addEventListener('click', toggleMobileMenu);
+        closeSidebar.addEventListener('click', toggleMobileMenu);
+        sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        
+        // Tab Switching
+        const tabs = document.querySelectorAll('[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('tab-active'));
+                this.classList.add('tab-active');
+                
+                // Show corresponding content
+                tabContents.forEach(content => content.classList.add('hidden'));
+                document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+                
+                // Update URL hash
+                window.location.hash = tabId;
+            });
+        });
+        
+        // Handle initial tab from URL hash
+        const hash = window.location.hash.substring(1);
+        if (hash && ['spot', 'futures', 'earn', 'history'].includes(hash)) {
+            const tab = document.querySelector(`[data-tab="${hash}"]`);
+            if (tab) tab.click();
+        }
+        
+        // Refresh Data
+        refreshButton.addEventListener('click', function() {
+            this.classList.add('animate-spin');
+            const button = this;
+            
+            // Simulate API call
+            setTimeout(() => {
+                button.classList.remove('animate-spin');
+                lastUpdated.textContent = 'Just now';
+                
+                // Simulate price updates
+                const currentTotal = parseFloat(totalBalance.textContent.replace('$', '').replace(',', ''));
+                const change = (Math.random() - 0.5) * 200;
+                const newTotal = currentTotal + change;
+                totalBalance.textContent = `$${newTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                showNotification('Balances updated successfully', 'success');
+            }, 1500);
+        });
+        
+        // Show All Assets
+        let assetsExpanded = false;
+        showAllAssets.addEventListener('click', function() {
+            assetsExpanded = !assetsExpanded;
+            
+            if (assetsExpanded) {
+                this.textContent = 'Show less';
+                moreAssetsRow.classList.remove('hidden');
+                
+                // Add sample additional assets
+                moreAssetsRow.innerHTML = `
+                    <!-- SOL Row -->
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                        <td class="py-4 px-4 md:px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">S</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Solana</div>
+                                    <div class="text-sm text-gray-400">SOL</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">25.6845</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">25.6845</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0000</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0591</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-bold">$2,528.68</td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <span class="price-up px-3 py-1 rounded-lg text-sm font-medium">+5.32%</span>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                                <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- ADA Row -->
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                        <td class="py-4 px-4 md:px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">A</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Cardano</div>
+                                    <div class="text-sm text-gray-400">ADA</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">1,245.68</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">1,245.68</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0000</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0149</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-bold">$638.24</td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <span class="price-up px-3 py-1 rounded-lg text-sm font-medium">+0.84%</span>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                                <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- DOT Row -->
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                        <td class="py-4 px-4 md:px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                                    <span class="font-bold text-white">D</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Polkadot</div>
+                                    <div class="text-sm text-gray-400">DOT</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">42.5684</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">42.5684</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0000</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-mono">0.0072</td>
+                        <td class="py-4 px-4 md:px-6 text-right font-bold">$308.24</td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <span class="price-down px-3 py-1 rounded-lg text-sm font-medium">-2.15%</span>
+                        </td>
+                        <td class="py-4 px-4 md:px-6 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button class="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-500/10 transition-colors">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                                <button class="text-green-400 hover:text-green-300 p-2 rounded-lg hover:bg-green-500/10 transition-colors">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                this.textContent = 'Show all';
+                moreAssetsRow.classList.add('hidden');
+                moreAssetsRow.innerHTML = '';
+            }
+        });
+        
+        // Initialize Asset Distribution Chart
+        function initAssetChart() {
+            const options = {
+                series: [53.4, 44.0, 2.6],
+                chart: {
+                    type: 'donut',
+                    height: '100%',
+                    background: 'transparent',
+                },
+                colors: ['#eab308', '#8b5cf6', '#10b981'],
+                labels: ['BTC', 'ETH', 'USDT'],
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    show: false
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '70%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'Total',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    color: '#f8fafc'
+                                },
+                                value: {
+                                    fontSize: '28px',
+                                    fontWeight: '700',
+                                    color: '#f8fafc'
+                                }
+                            }
+                        }
+                    }
+                },
+                stroke: {
+                    width: 0
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            };
+            
+            const chart = new ApexCharts(document.querySelector("#asset-chart"), options);
+            chart.render();
+            
+            return chart;
+        }
+        
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chart
+            const chart = initAssetChart();
+            
+            // Update last updated time
+            setInterval(() => {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                lastUpdated.textContent = `${minutes.toString().padStart(2, '0')} min ago`;
+            }, 60000);
+            
+            // Add click handlers to action buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Simulate real-time balance updates
+            setInterval(() => {
+                // Random small updates to total balance
+                const balanceElements = document.querySelectorAll('#total-balance, .text-3xl.font-bold');
+                balanceElements.forEach(el => {
+                    if (el.textContent.includes('$')) {
+                        const current = parseFloat(el.textContent.replace('$', '').replace(',', ''));
+                        const change = (Math.random() - 0.5) * 10;
+                        const newValue = current + change;
+                        el.textContent = `$${newValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    }
+                });
+            }, 30000);
+            
+            // Demo notification
+            setTimeout(() => {
+                showNotification('New deposit received: 0.125 BTC added to your spot wallet', 'success');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CryptoFutures Pro | Professional Trading Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom Animation CSS -->
+ <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+    }
+
+    /* ================================================================== */
+    /* GLOBAL – NO HORIZONTAL SCROLL + FULL MOBILE SAFETY */
+    /* ================================================================== */
+    html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        min-height: 100vh;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin: 0 auto;
+    }
+    @media (min-width: 640px) { .container { padding-left: 2rem; padding-right: 2rem; } }
+    @media (min-width: 1024px) { .container { max-width: 1280px; } }
+
+    /* ================================================================== */
+    /* HERO PADDING */
+    /* ================================================================== */
+    section:first-of-type {
+        padding-top: 8rem;
+        position: relative;
+        overflow: hidden; /* Ensures floating icons don't trigger scroll */
+    }
+    @media (max-width: 768px)  { section:first-of-type { padding-top: 150px !important; } }
+    @media (max-width: 480px)  { section:first-of-type { padding-top: 170px !important; } }
+
+    /* ================================================================== */
+    /* START TRADING BUTTON */
+    /* ================================================================== */
+    .btn-start-trading {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.9375rem !important;
+        font-weight: 600 !important;
+        border-radius: 0.75rem !important;
+    }
+    @media (max-width: 640px) {
+        .btn-start-trading { padding: 0.625rem 1.25rem !important; font-size: 0.875rem !important; }
+    }
+
+    /* ================================================================== */
+    /* ANIMATIONS – WIDER FLOATING ORBIT */
+    /* ================================================================== */
+    @keyframes float-wide {
+        0%, 100%   { transform: translateY(0px)   translateX(0px); }
+        25%        { transform: translateY(-30px) translateX(15px); }
+        50%        { transform: translateY(-40px) translateX(0px); }
+        75%        { transform: translateY(-30px) translateX(-15px); }
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.7; }
+    }
+
+    @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInLeft  { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    .animate-float-wide { animation: float-wide 10s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .animate-slide-in-right { animation: slideInRight 0.8s ease-out forwards; }
+    .animate-slide-in-left  { animation: slideInLeft 0.8s ease-out forwards; }
+
+    /* ================================================================== */
+    /* GLASS & UI */
+    /* ================================================================== */
+    .glass {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 1rem;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-track { background:rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar-thumb { background:rgba(59,130,246,0.5); border-radius:4px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(59,130,246,0.8); }
+
+    /* ================================================================== */
+    /* FLOATING CRYPTO ICONS – MOVED DEEP INSIDE + WIDER ORBIT */
+    /* ================================================================== */
+    .floating-crypto {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 40;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        animation: float-wide 10s ease-in-out infinite;
+    }
+
+    /* Desktop – elegant positions well inside the card */
+    @media (min-width: 769px) {
+        .floating-crypto.bitcoin   { top: 10%;   left: 8%;   animation-delay: 0s; }
+        .floating-crypto.ethereum  { bottom: 12%; right: 10%; animation-delay: 2s; }
+        .floating-crypto.coins     { top: 55%;   right: 6%;  animation-delay: 4s; }
+    }
+
+    /* Tablet & Mobile – pulled safely inside, never cut */
+    @media (max-width: 768px) {
+        .floating-crypto {
+            width: 56px;
+            height: 56px;
+        }
+        .floating-crypto.bitcoin   { top: 8%;  left: 5%; }
+        .floating-crypto.ethereum  { bottom: 10%; right: 5%; }
+        .floating-crypto.coins     { top: 45%; right: 4%; }
+    }
+
+    @media (max-width: 480px) {
+        .floating-crypto {
+            width: 50px;
+            height: 50px;
+        }
+        .floating-crypto.bitcoin   { top: 6%;  left: 4%; }
+        .floating-crypto.ethereum  { bottom: 8%; right: 4%; }
+        .floating-crypto.coins     { top: 42%; right: 3%; }
+    }
+
+    /* ================================================================== */
+    /* WHATSAPP BUTTON – Always on top */
+    /* ================================================================== */
+    .whatsapp-float {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 16px;
+        background-color: #25d366;
+        color: white;
+        border-radius: 50px;
+        font-size: 32px;
+        box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        animation: pulse-glow 2s infinite;
+    }
+    .whatsapp-float:hover {
+        transform: scale(1.1);
+        background-color: #20c05a;
+    }
+    @media (max-width: 480px) {
+        .whatsapp-float { width: 54px; height: 54px; font-size: 28px; bottom: 16px; right: 12px; }
+    }
+
+    /* ================================================================== */
+    /* FINAL SAFETY */
+    /* ================================================================== */
+    @media (max-width:540px) and (max-height:720px) {
+        .foldable-optimized { padding-top:1rem !important; padding-bottom:1rem !important; }
+        .foldable-text { font-size:0.9rem !important; }
+    }
+
+    img, svg, .glass, section, div { max-width: 100% !important; overflow: hidden; }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 overflow-x-hidden">
+    
+    <!-- Navigation -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center animate-pulse-glow">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">...</span></span>
+            </div>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-gray-300 hover:text-white transition-colors duration-300">Features</a>
+                <a href="#screenshots" class="text-gray-300 hover:text-white transition-colors duration-300">Screenshots</a>
+                <a href="#pricing" class="text-gray-300 hover:text-white transition-colors duration-300">Pricing</a>
+                <a href="#contact" class="text-gray-300 hover:text-white transition-colors duration-300">Contact</a>
+            </div>
+            
+            <!-- CTA Buttons -->
+            <div class="flex items-center space-x-4">
+                {% if user %}
+                <span class="text-gray-300">Welcome, {{ user.username }}!</span>
+                <a href="/logout" class="text-gray-300 hover:text-white transition-colors duration-300 hidden sm:inline">Logout</a>
+                {% else %}
+                <a href="/login" class="text-gray-300 hover:text-white transition-colors duration-300 hidden sm:inline">Login</a>
+                {% endif %}
+                <a href="{% if user %}/dashboard{% else %}/login{% endif %}" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 btn-start-trading">
+    {% if user %}Start Trading{% else %}Login to Trade{% endif %} <i class="fas fa-arrow-right ml-2"></i>
+</a>
+                
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden hidden mt-4 pb-4">
+            <div class="flex flex-col space-y-4">
+                <a href="#features" class="text-gray-300 hover:text-white py-2">Features</a>
+                <a href="#screenshots" class="text-gray-300 hover:text-white py-2">Screenshots</a>
+                <a href="#pricing" class="text-gray-300 hover:text-white py-2">Pricing</a>
+                <a href="#contact" class="text-gray-300 hover:text-white py-2">Contact</a>
+                {% if user %}
+                <span class="text-gray-300 py-2">Welcome, {{ user.username }}!</span>
+                <a href="/logout" class="text-gray-300 hover:text-white py-2">Logout</a>
+                {% else %}
+                <a href="/login" class="text-gray-300 hover:text-white py-2">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 md:px-8 foldable-optimized">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Left Column -->
+                <div class="animate-slide-in-left">
+                    <div class="inline-flex items-center space-x-2 bg-gray-800/50 rounded-full px-4 py-2 mb-6">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-sm font-medium">LIVE TRADING DASHBOARD</span>
+                    </div>
+                    
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        Trade <span class="gradient-text">Futures</span> Like A Pro
+                    </h1>
+                    
+                    <p class="text-xl text-gray-300 mb-8 foldable-text">
+                        Advanced Binance futures trading dashboard with real-time charts, portfolio tracking, and professional tools. All in one secure platform.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                        <a href="{% if user %}/dashboard{% else %}/register{% endif %}" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 text-center">
+                            {% if user %}Go to Dashboard{% else %}Get Started Free{% endif %} <i class="fas fa-rocket ml-2"></i>
+                        </a>
+                        <a href="#features" class="glass hover:bg-gray-800/50 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 text-center">
+                            Explore Features
+                        </a>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="glass p-4 rounded-xl">
+                            <div class="text-2xl font-bold text-blue-400">24/7</div>
+                            <div class="text-gray-400 text-sm">Real-time Data</div>
+                        </div>
+                        <div class="glass p-4 rounded-xl">
+                            <div class="text-2xl font-bold text-green-400">100+</div>
+                            <div class="text-gray-400 text-sm">Trading Pairs</div>
+                        </div>
+                        <div class="glass p-4 rounded-xl">
+                            <div class="text-2xl font-bold text-purple-400">∞</div>
+                            <div class="text-gray-400 text-sm">Custom Charts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column - Animated Dashboard Preview -->
+                <div class="relative animate-slide-in-right">
+                    <div class="relative glass rounded-2xl p-2 shadow-2xl overflow-hidden">
+                        <!-- Fake trading chart -->
+                        <div class="bg-gradient-to-b from-gray-900 to-gray-950 rounded-xl p-4">
+                            <!-- Chart header -->
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"></div>
+                                    <div>
+                                        <div class="font-bold">BTC/USDT</div>
+                                        <div class="text-green-400 text-sm">$42,856.32 <span class="text-xs">+2.4%</span></div>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <div class="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-sm">1H</div>
+                                    <div class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">4H</div>
+                                    <div class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">1D</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart area -->
+                            <div class="relative h-64 mb-4">
+                                <!-- Chart line -->
+                                <div class="absolute inset-0">
+                                    <svg viewBox="0 0 300 150" class="w-full h-full">
+                                        <path d="M0,100 C30,80 60,120 90,90 C120,60 150,130 180,100 C210,70 240,140 270,110 C300,80 300,80 300,80" 
+                                              stroke="url(#gradient)" stroke-width="3" fill="none"/>
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#3b82f6" />
+                                                <stop offset="100%" stop-color="#8b5cf6" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Candlesticks (sample) -->
+                                <div class="absolute bottom-0 left-0 right-0 flex justify-between px-4">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 bg-red-500 h-8 rounded-sm"></div>
+                                        <div class="text-xs mt-1 text-gray-500">9:00</div>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 bg-green-500 h-12 rounded-sm"></div>
+                                        <div class="text-xs mt-1 text-gray-500">12:00</div>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 bg-red-500 h-6 rounded-sm"></div>
+                                        <div class="text-xs mt-1 text-gray-500">15:00</div>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 bg-green-500 h-10 rounded-sm"></div>
+                                        <div class="text-xs mt-1 text-gray-500">18:00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Stats bar -->
+                            <div class="grid grid-cols-4 gap-2 text-center">
+                                <div>
+                                    <div class="text-xs text-gray-500">High</div>
+                                    <div class="text-sm font-semibold">$43,210</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500">Low</div>
+                                    <div class="text-sm font-semibold">$42,100</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500">24h Vol</div>
+                                    <div class="text-sm font-semibold">28.5K BTC</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500">Change</div>
+                                    <div class="text-sm font-semibold text-green-400">+2.4%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Floating elements -->
+                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+                        <div class="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full blur-xl"></div>
+                    </div>
+                    
+                    <!-- Animated crypto coins floating around -->
+                    <!-- Replace your three floating divs with these -->
+<div class="floating-crypto bitcoin glass animate-float-wide">
+    <i class="fab fa-bitcoin text-yellow-500 text-3xl"></i>
+</div>
+<div class="floating-crypto ethereum glass animate-float-wide">
+    <i class="fab fa-ethereum text-purple-500 text-3xl"></i>
+</div>
+<div class="floating-crypto coins glass animate-float-wide">
+    <i class="fas fa-coins text-orange-500 text-3xl"></i>
+</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4 md:px-8 bg-gradient-to-b from-transparent to-gray-900/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Professional Trading <span class="gradient-text">Features</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Everything you need for successful futures trading in one powerful dashboard</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-candlestick text-blue-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Live Futures Charts</h3>
+                    <p class="text-gray-400 mb-4">Advanced candlestick charts with mark price, liquidation levels, and real-time funding rate countdown.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Multiple timeframes</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Technical indicators</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Drawing tools</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-wallet text-green-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Portfolio Management</h3>
+                    <p class="text-gray-400 mb-4">Track spot and futures balances, P&L, margin ratios, and equity across all your positions in real-time.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Real-time P&L tracking</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Cross/isolated margin views</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Liquidation warnings</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-shield-alt text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Secure & Encrypted</h3>
+                    <p class="text-gray-400 mb-4">Your API keys are encrypted with military-grade encryption. We never store your funds or private keys.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> AES-256 encryption</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Read-only API access</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 2FA support</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-mobile-alt text-orange-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Fully Responsive</h3>
+                    <p class="text-gray-400 mb-4">Trade on any device - desktop, tablet, phone, or foldable screens. Optimized for all screen sizes.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Mobile-first design</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Foldable optimized</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Touch gestures</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-pink-500/20 to-pink-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-bolt text-pink-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Real-time Updates</h3>
+                    <p class="text-gray-400 mb-4">WebSocket connections for instant price updates, order book changes, and position updates with no delay.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Live order book</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Instant price alerts</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> WebSocket streams</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="glass rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-2 group">
+                    <div class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-cogs text-cyan-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Customizable Dashboard</h3>
+                    <p class="text-gray-400 mb-4">Arrange widgets, set up watchlists, customize charts, and create your perfect trading workspace.</p>
+                    <ul class="space-y-2 text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Drag & drop widgets</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Multiple layouts</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Dark/light themes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="py-20 px-4 md:px-8">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Dashboard <span class="gradient-text">Screenshots</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">See how our professional trading dashboard looks across different devices and screens</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Screenshot 1 -->
+                <div class="glass rounded-2xl p-4 overflow-hidden group">
+                    <div class="relative overflow-hidden rounded-xl mb-4">
+                        <div class="bg-gradient-to-br from-gray-900 to-gray-950 h-64 flex items-center justify-center">
+                            <!-- Mock dashboard -->
+                            <div class="w-full p-4">
+                                <div class="flex justify-between mb-4">
+                                    <div class="w-1/3 h-4 bg-gray-800 rounded"></div>
+                                    <div class="w-1/4 h-4 bg-gray-800 rounded"></div>
+                                </div>
+                                <div class="h-32 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg mb-4"></div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="h-8 bg-gray-800 rounded"></div>
+                                    <div class="h-8 bg-green-900/30 rounded"></div>
+                                    <div class="h-8 bg-gray-800 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
+                            <div class="text-center">
+                                <div class="text-white font-bold mb-2">Main Dashboard</div>
+                                <div class="text-gray-300 text-sm">Real-time portfolio overview</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold">Portfolio Overview</div>
+                        <div class="text-gray-500 text-sm">Spot & futures balances</div>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 2 -->
+                <div class="glass rounded-2xl p-4 overflow-hidden group">
+                    <div class="relative overflow-hidden rounded-xl mb-4">
+                        <div class="bg-gradient-to-br from-gray-900 to-gray-950 h-64 flex items-center justify-center">
+                            <!-- Mock chart -->
+                            <div class="w-full p-4">
+                                <div class="flex justify-between mb-4">
+                                    <div class="w-1/4 h-6 bg-gray-800 rounded"></div>
+                                    <div class="flex space-x-2">
+                                        <div class="w-10 h-6 bg-blue-900/50 rounded"></div>
+                                        <div class="w-10 h-6 bg-gray-800 rounded"></div>
+                                        <div class="w-10 h-6 bg-gray-800 rounded"></div>
+                                    </div>
+                                </div>
+                                <div class="h-32 bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg mb-4 relative">
+                                    <!-- Chart line -->
+                                    <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="w-1/5 h-4 bg-gray-800 rounded"></div>
+                                    <div class="w-1/5 h-4 bg-gray-800 rounded"></div>
+                                    <div class="w-1/5 h-4 bg-gray-800 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
+                            <div class="text-center">
+                                <div class="text-white font-bold mb-2">Advanced Charts</div>
+                                <div class="text-gray-300 text-sm">Technical analysis tools</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold">Futures Charts</div>
+                        <div class="text-gray-500 text-sm">With indicators & drawing tools</div>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 3 -->
+                <div class="glass rounded-2xl p-4 overflow-hidden group">
+                    <div class="relative overflow-hidden rounded-xl mb-4">
+                        <div class="bg-gradient-to-br from-gray-900 to-gray-950 h-64 flex items-center justify-center">
+                            <!-- Mock mobile view -->
+                            <div class="w-48 h-full bg-gray-950 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                                    <div class="w-16 h-4 bg-gray-800 rounded"></div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="h-6 bg-gray-800 rounded"></div>
+                                    <div class="h-10 bg-gray-800 rounded"></div>
+                                    <div class="h-10 bg-green-900/30 rounded"></div>
+                                    <div class="h-6 bg-gray-800 rounded"></div>
+                                    <div class="h-10 bg-gray-800 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
+                            <div class="text-center">
+                                <div class="text-white font-bold mb-2">Mobile Optimized</div>
+                                <div class="text-gray-300 text-sm">Trade on the go</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold">Mobile View</div>
+                        <div class="text-gray-500 text-sm">Fully responsive design</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="py-20 px-4 md:px-8 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Elevate Your Trading?</h2>
+            <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Join thousands of traders using CryptoFuturesPro to make smarter decisions and maximize their profits.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                <a href="{% if user %}/dashboard{% else %}/register{% endif %}" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-10 py-5 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1">
+                    {% if user %}Go to Dashboard{% else %}Start Free Trial{% endif %} <i class="fas fa-play-circle ml-2"></i>
+                </a>
+                <a href="#features" class="glass hover:bg-gray-800/50 text-white px-10 py-5 rounded-2xl font-bold text-xl transition-all duration-300">
+                    Watch Demo <i class="fas fa-video ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-400">99.9%</div>
+                    <div class="text-gray-400">Uptime</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-400">50ms</div>
+                    <div class="text-gray-400">Latency</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-purple-400">24/7</div>
+                    <div class="text-gray-400">Support</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-orange-400">Free</div>
+                    <div class="text-gray-400">Basic Plan</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Floating WhatsApp Button -->
+<a href="https://wa.me/254769525570" target="_blank" class="whatsapp-float">
+    <i class="fab fa-whatsapp"></i>
+</a>
+<style>
+    /* WhatsApp Floating Button CSS */
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 25px;
+    right: 25px;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 32px;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    animation: pulse-glow 2s infinite;
+}
+
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    background-color: #20c05a;
+    box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
+}
+
+/* Responsive for small screens */
+@media (max-width: 480px) {
+    .whatsapp-float {
+        width: 55px;
+        height: 55px;
+        font-size: 28px;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Re-use your existing pulse animation (already in your CSS) */
+@keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+</style>
+    
+    <!-- Footer -->
+    <footer class="py-12 px-4 md:px-8 bg-gray-900/50">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <!-- Company -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Professional Binance futures trading dashboard for serious traders.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-blue-600/20 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-blue-700/20 transition-colors">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-purple-600/20 transition-colors">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:bg-gray-700/20 transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Product -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6">Product</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">API</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Risk Disclosure</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Compliance</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6">Contact Us</h3>
+                    <ul class="space-y-3">
+                        <li class="text-gray-400"><i class="fas fa-envelope mr-2"></i> support@cryptofuturespro.com</li>
+                        <li class="text-gray-400"><i class="fas fa-phone mr-2"></i> +254769525570</li>
+                        <li class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i> Singapore, SG</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-800 text-center text-gray-500">
+                <p>&copy; 2025 CryptoFuturesPro. All rights reserved. Cryptocurrency trading involves significant risk.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript for interactivity -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = this.querySelector('i');
+            
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                menu.classList.add('hidden');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('hidden');
+                document.querySelector('#mobile-menu-button i').classList.remove('fa-times');
+                document.querySelector('#mobile-menu-button i').classList.add('fa-bars');
+            });
+        });
+        
+        // Add scroll animation to elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate elements on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        entry.target.classList.remove('opacity-0', 'translate-y-10');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe elements to animate
+            document.querySelectorAll('.feature-card, .screenshot-card').forEach(el => {
+                el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
+                observer.observe(el);
+            });
+            
+            // Update BTC price randomly (for demo effect)
+            const btcPriceElement = document.querySelector('.animate-slide-in-right .text-green-400');
+            if (btcPriceElement) {
+                setInterval(() => {
+                    const currentPrice = parseFloat(btcPriceElement.textContent.replace('$', '').replace(',', ''));
+                    const change = (Math.random() - 0.5) * 100;
+                    const newPrice = currentPrice + change;
+                    const isPositive = change >= 0;
+                    
+                    btcPriceElement.textContent = `$${newPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} `;
+                    btcPriceElement.innerHTML += `<span class="text-xs">${isPositive ? '+' : ''}${change.toFixed(2)}%</span>`;
+                    
+                    // Update color based on change
+                    btcPriceElement.className = isPositive ? 'text-green-400 text-sm' : 'text-red-400 text-sm';
+                }, 5000);
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

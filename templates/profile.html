@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Profile | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+ <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+        /* Dark theme (default) */
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: rgba(255,255,255,0.05);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --border-color: rgba(255,255,255,0.1);
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+    }
+
+    .light-theme {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: rgba(0,0,0,0.05);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: rgba(0,0,0,0.1);
+        --glass-bg: rgba(255,255,255,0.9);
+        --glass-border: rgba(0,0,0,0.1);
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+    
+    /* ================================================================== */
+    /*  MOBILE-ONLY FIX: PUSH PROFILE HEADER BELOW FIXED NAVBAR          */
+    /* ================================================================== */
+    @media (max-width: 1024px) {
+        /* All pages that have a fixed top navbar (height ~80–90px on mobile) */
+        main {
+            padding-top: 110px !important; /* ← pushes everything down safely */
+        }
+        
+        /* Extra safety for very small screens / iPhone with notch */
+        @media (max-height: 700px) {
+            main {
+                padding-top: 130px !important;
+            }
+        }
+    }
+
+    /* If you ever want to be even more precise only on this profile page */
+    @media (max-width: 1024px) {
+        .profile-header-mobile-fix {
+            margin-top: 2rem !important;
+        }
+    }
+
+    /* ================================================================== */
+    /* Your original animations & glass styles (unchanged)                */
+    /* ================================================================== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInLeft { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse-subtle { 0%,100% {opacity:1} 50%{opacity:0.8} }
+
+    
+
+    .animate-fade-in       { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-in-left { animation: slideInLeft 0.4s ease-out forwards; }
+    .animate-slide-in-right{ animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-subtle  { animation: pulse-subtle 2s ease-in-out infinite; }
+
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .glass-dark {
+        background: rgba(15,23,42,0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(59,130,246,0.5) rgba(255,255,255,0.05); }
+    .custom-scrollbar::-webkit-scrollbar { width:6px; height:6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background:rgba(255,255,255,0.05); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background:rgba(59,130,246,0.5); border-radius:3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:rgba(59,130,246,0.8); }
+
+    .gradient-text {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+        -webkit-background-clip:text;
+        background-clip:text;
+        color:transparent;
+    }
+
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Trading buttons */
+    .trading-btn {
+        padding:0.5rem 1.5rem;
+        border-radius:0.5rem;
+        font-weight:500;
+        transition:all 0.2s;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .trading-btn-primary  { background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; }
+    .trading-btn-primary:hover { background:linear-gradient(135deg,#1d4ed8,#1e40af); transform:translateY(-2px); box-shadow:0 10px 25px rgba(59,130,246,0.3); }
+    .trading-btn-secondary { background:rgba(255,255,255,0.05); color:#f8fafc; border:1px solid rgba(255,255,255,0.1); }
+    .trading-btn-secondary:hover { background:rgba(255,255,255,0.1); transform:translateY(-2px); }
+
+    /* Badges */
+    .badge { display:inline-flex; align-items:center; padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.75rem; font-weight:600; }
+    .badge-success { background:rgba(16,185,129,0.1); color:#10b981; }
+    .badge-warning { background:rgba(245,158,11,0.1); color:#f59e0b; }
+    .badge-danger  { background:rgba(239,68,68,0.1); color:#ef4444; }
+    .badge-info    { background:rgba(59,130,246,0.1); color:#3b82f6; }
+    .badge-premium { background:linear-gradient(135deg,#f59e0b,#d97706); color:white; }
+
+    /* Tabs */
+    .tab-btn {
+        padding:0.75rem 1.5rem;
+        border-radius:0.5rem;
+        font-weight:500;
+        transition:all 0.2s;
+        background:transparent;
+        color:#9ca3af;
+    }
+    .tab-btn:hover { background:rgba(255,255,255,0.05); color:#f8fafc; }
+    .tab-btn.active { background:rgba(59,130,246,0.1); color:#3b82f6; border-bottom:2px solid #3b82f6; }
+
+    /* Form styles */
+    .form-input {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        width: 100%;
+        transition: all 0.2s;
+    }
+    .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+    /* Select dropdown specific styling */
+    select.form-input {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Ensure select options have proper contrast */
+    select.form-input option {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    .form-label { display: block; font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
+
+    /* Progress bars */
+    .progress-bar { height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#8b5cf6); border-radius:3px; transition:width .3s ease; }
+
+    /* Avatar upload */
+    .avatar-upload { position:relative; width:128px; height:128px; }
+    .avatar-image { width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid rgba(59,130,246,0.3); }
+    .avatar-upload-btn { position:absolute; bottom:0; right:0; width:36px; height:36px; background:#3b82f6; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; cursor:pointer; transition:all .2s; z-index:10; }
+    .avatar-upload-btn:hover { background:#2563eb; transform:scale(1.1); }
+
+    /* Stats cards & toggle switch (unchanged) */
+    .stat-card { padding:1.5rem; border-radius:1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); transition:all .2s; }
+    .stat-card:hover { background:rgba(255,255,255,0.05); transform:translateY(-2px); }
+
+    .toggle-switch { position:relative; display:inline-block; width:48px; height:24px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; cursor:pointer; top:0;left:0;right:0;bottom:0; background:#374151; transition:.4s; border-radius:24px; }
+    .toggle-slider:before { position:absolute; content:""; height:16px; width:16px; left:4px; bottom:4px; background:white; transition:.4s; border-radius:50%; }
+    input:checked + .toggle-slider { background:#3b82f6; }
+    input:checked + .toggle-slider:before { transform:translateX(24px); }
+
+    /* Timeline & responsive */
+    .timeline-item { position:relative; padding-left:2rem; margin-bottom:1.5rem; }
+    .timeline-item:before { content:''; position:absolute; left:0.5rem; top:0.25rem; width:12px; height:12px; border-radius:50%; background:#3b82f6; }
+    .timeline-item:after { content:''; position:absolute; left:0.75rem; top:1.25rem; bottom:-1.5rem; width:2px; background:rgba(255,255,255,0.1); }
+    .timeline-item:last-child:after { display:none; }
+
+    @media (max-width:640px) {
+        .mobile-full { width:100% !important; }
+        .mobile-hidden { display:none !important; }
+        .mobile-stack { flex-direction:column !important; }
+        .mobile-text-center { text-align:center !important; }
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        position:absolute;
+        top:0;left:0;right:0;bottom:0;
+        background:rgba(15,23,42,0.8);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        z-index:20;
+        border-radius:0.75rem;
+    }
+
+    /* Textarea specific styling */
+    textarea.form-input {
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.5;
+        font-family: inherit;
+    }
+
+    /* Bio textarea specific styling */
+    .bio-textarea {
+        color: #f8fafc !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    .bio-textarea:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    }
+
+    /* Ensure textarea text is always visible */
+    textarea.form-input {
+        color: var(--text-primary) !important;
+        background: var(--bg-tertiary) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+
+    textarea.form-input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    }
+
+    /* Mobile textarea fixes */
+    @media (max-width: 768px) {
+        textarea.form-input {
+            resize: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* Prevent page scroll when focusing textarea on mobile */
+        textarea.form-input:focus {
+            position: relative;
+            z-index: 10;
+        }
+    }
+
+    /* ────────────────────────────────
+       MOBILE SIDEBAR FIXES (you already had these – kept)
+       ──────────────────────────────── */
+    nav.glass { z-index:50; }
+    #mobile-sidebar { z-index:60 !important; }
+    #mobile-sidebar .glass-dark { padding-top:100px !important; position:relative; }
+    #mobile-sidebar .border-b.border-gray-800 {
+        position:absolute;
+        top:0; left:0; right:0;
+        height:90px;
+        background:rgba(15,23,42,0.95);
+        backdrop-filter:blur(10px);
+        z-index:10;
+        display:flex;
+        align-items:center;
+        padding:0 1.5rem;
+        justify-content:space-between;
+    }
+    #close-sidebar { position:absolute; top:50%; right:1.5rem; transform:translateY(-50%); z-index:11;  }
+    #mobile-sidebar .p-6 { padding:0 !important; }
+    @media (max-width:1024px) {
+        #mobile-sidebar .glass-dark { padding-top:110px !important; }
+    }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="/dashboard" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="/dashboard" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="balances.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="futures_chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Futures
+                    </a>
+                    <a href="chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Charts
+                    </a>
+                    <a href="/profile" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-user mr-2"></i> Profile
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right: User & Settings -->
+            <div class="flex items-center space-x-3">
+                <!-- Notification -->
+                <button class="relative w-10 h-10 rounded-xl bg-gray-800/50 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">
+                    <i class="fas fa-bell"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                
+                <!-- User Profile -->
+                <div class="relative">
+                    <a href="/profile" class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <img src="{{ user.avatar_path or '/static/images/default-avatar.png' }}"
+                             alt="Avatar"
+                             class="w-8 h-8 rounded-full object-cover border border-gray-600">
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">{{ user.first_name or '' }} {{ user.last_name or '' }}</div>
+                            <div class="text-xs text-gray-400">{{ user.email }}</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Title -->
+        <div class="mt-3 lg:hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-bold text-lg">Profile Settings</div>
+                    <div class="text-sm text-gray-400">Manage your account</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            
+            <div class="p-6 border-b border-gray-800">
+                
+                
+                <div class="flex items-center justify-between">
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="/dashboard" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="balances.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="futures_chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-candlestick w-5"></i>
+                        <span>Futures</span>
+                    </a>
+                    <a href="chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Charts</span>
+                    </a>
+                    <a href="/profile" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-user w-5"></i>
+                        <span>Profile</span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-key w-5"></i>
+                            <span>API Keys</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="pt-24 pb-16 px-4 md:px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Header -->
+            <!-- Page Header -->
+<div class="mb-8 animate-fade-in profile-header-mobile-fix">
+                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-2">Profile Settings</h1>
+                        <div class="flex items-center space-x-4 text-gray-400">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-check text-green-400 mr-2"></i>
+                                <span class="text-sm">Verified Account</span>
+                            </div>
+                            <span class="hidden md:inline">•</span>
+                            <div class="text-sm">Member since: Jan 2023</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                        <span class="badge badge-premium">
+                            <i class="fas fa-crown mr-1"></i> Professional Plan
+                        </span>
+                        <button id="export-data" class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-download mr-2"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Left Column: Profile Card & Stats -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- Profile Card -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-left">
+                        <div class="flex flex-col items-center text-center">
+                            <!-- Avatar -->
+                            <div class="avatar-upload mb-6">
+                                <img src="{{ user.avatar_path or '/static/images/default-avatar.png' }}"
+                                     alt="Profile"
+                                     class="avatar-image"
+                                     id="profile-avatar">
+                                <div class="avatar-upload-btn" id="change-avatar-btn" onclick="document.getElementById('avatar-input').click()">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <input type="file" id="avatar-input" accept="image/*" class="hidden">
+                            </div>
+                            
+                            <!-- User Info -->
+                            <h2 class="text-xl font-bold mb-1">{{ user.first_name or '' }} {{ user.last_name or '' }}</h2>
+                            <div class="text-gray-400 mb-4">{{ user.email }}</div>
+                            
+                            <!-- Account Level -->
+                            <div class="mb-6">
+                                <div class="text-sm text-gray-400 mb-2">Account Level</div>
+                                <div class="flex items-center justify-center space-x-2">
+                                    <i class="fas fa-shield-alt text-blue-400"></i>
+                                    <span class="font-medium">Professional</span>
+                                </div>
+                                <div class="progress-bar w-32 mx-auto mt-2">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-2">75% complete</div>
+                            </div>
+                            
+                            <!-- Quick Stats -->
+                            <div class="grid grid-cols-2 gap-4 w-full mb-6">
+                                <div class="stat-card text-center">
+                                    <div class="text-2xl font-bold text-green-400">124</div>
+                                    <div class="text-xs text-gray-400">Total Trades</div>
+                                </div>
+                                <div class="stat-card text-center">
+                                    <div class="text-2xl font-bold">42.5%</div>
+                                    <div class="text-xs text-gray-400">Win Rate</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Completion -->
+                            <div class="w-full mb-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-sm text-gray-400">Profile Complete</div>
+                                    <div class="text-sm font-bold text-green-400">85%</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-2">Complete profile for better insights</div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="w-full space-y-3">
+                                <a href="settings.html" class="trading-btn trading-btn-secondary w-full">
+                                    <i class="fas fa-cog mr-2"></i> Settings
+                                </a>
+                                <a href="api_keys.html" class="trading-btn trading-btn-secondary w-full">
+                                    <i class="fas fa-key mr-2"></i> API Keys
+                                </a>
+                                <button id="logout-btn" class="trading-btn trading-btn-secondary w-full" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Verification Status -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-left" style="animation-delay: 0.1s">
+                        <h3 class="text-lg font-bold mb-4">Verification Status</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-check text-green-400 text-xs"></i>
+                                    </div>
+                                    <span>Email Verified</span>
+                                </div>
+                                <span class="text-green-400 text-sm">Verified</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-check text-green-400 text-xs"></i>
+                                    </div>
+                                    <span>Phone Verified</span>
+                                </div>
+                                <span class="text-green-400 text-sm">Verified</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-clock text-yellow-400 text-xs"></i>
+                                    </div>
+                                    <span>KYC Level 2</span>
+                                </div>
+                                <span class="text-yellow-400 text-sm">Pending</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 bg-gray-500/20 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-times text-gray-400 text-xs"></i>
+                                    </div>
+                                    <span>Advanced Trading</span>
+                                </div>
+                                <span class="text-gray-400 text-sm">Not Applied</span>
+                            </div>
+                        </div>
+                        <button class="trading-btn trading-btn-secondary w-full mt-6">
+                            <i class="fas fa-shield-alt mr-2"></i> Upgrade Verification
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Main Content -->
+                <div class="lg:col-span-3 space-y-8">
+                    <!-- Tabs Navigation -->
+                    <div class="glass rounded-2xl p-4 animate-slide-in-right">
+                        <div class="flex overflow-x-auto custom-scrollbar space-x-2">
+                            <button class="tab-btn active" data-tab="personal">
+                                <i class="fas fa-user mr-2"></i> Personal Info
+                            </button>
+                            <button class="tab-btn" data-tab="security">
+                                <i class="fas fa-shield-alt mr-2"></i> Security
+                            </button>
+                            <button class="tab-btn" data-tab="preferences">
+                                <i class="fas fa-sliders-h mr-2"></i> Preferences
+                            </button>
+                            <button class="tab-btn" data-tab="notifications">
+                                <i class="fas fa-bell mr-2"></i> Notifications
+                            </button>
+                            <button class="tab-btn" data-tab="billing">
+                                <i class="fas fa-credit-card mr-2"></i> Billing
+                            </button>
+                            <button class="tab-btn" data-tab="activity">
+                                <i class="fas fa-history mr-2"></i> Activity
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab Contents -->
+                    <div class="space-y-8">
+                        <!-- Personal Info Tab -->
+                        <div id="personal-tab" class="tab-content">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold">Personal Information</h3>
+                                    <button class="trading-btn trading-btn-secondary" id="edit-personal-btn">
+                                        <i class="fas fa-edit mr-2"></i> Edit
+                                    </button>
+                                </div>
+                                
+                                <form id="personal-form" class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="form-label" for="first-name">First Name</label>
+                                            <input type="text" id="first-name" name="first_name" class="form-input" value="{{ user.first_name or '' }}" >
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="last-name">Last Name</label>
+                                            <input type="text" id="last-name" name="last_name" class="form-input" value="{{ user.last_name or '' }}" >
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="email">Email Address</label>
+                                            <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="phone">Phone Number</label>
+                                            <input type="tel" id="phone" name="phone" class="form-input" value="{{ user.phone or '' }}" >
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="form-label" for="country">Country</label>
+                                            <select id="country" name="country" class="form-input">
+                                                <option value="">Select Country</option>
+                                                <option value="AF" {% if user.country == 'AF' %}selected{% endif %}>Afghanistan</option>
+                                                <option value="AL" {% if user.country == 'AL' %}selected{% endif %}>Albania</option>
+                                                <option value="DZ" {% if user.country == 'DZ' %}selected{% endif %}>Algeria</option>
+                                                <option value="AS" {% if user.country == 'AS' %}selected{% endif %}>American Samoa</option>
+                                                <option value="AD" {% if user.country == 'AD' %}selected{% endif %}>Andorra</option>
+                                                <option value="AO" {% if user.country == 'AO' %}selected{% endif %}>Angola</option>
+                                                <option value="AI" {% if user.country == 'AI' %}selected{% endif %}>Anguilla</option>
+                                                <option value="AQ" {% if user.country == 'AQ' %}selected{% endif %}>Antarctica</option>
+                                                <option value="AG" {% if user.country == 'AG' %}selected{% endif %}>Antigua and Barbuda</option>
+                                                <option value="AR" {% if user.country == 'AR' %}selected{% endif %}>Argentina</option>
+                                                <option value="AM" {% if user.country == 'AM' %}selected{% endif %}>Armenia</option>
+                                                <option value="AW" {% if user.country == 'AW' %}selected{% endif %}>Aruba</option>
+                                                <option value="AU" {% if user.country == 'AU' %}selected{% endif %}>Australia</option>
+                                                <option value="AT" {% if user.country == 'AT' %}selected{% endif %}>Austria</option>
+                                                <option value="AZ" {% if user.country == 'AZ' %}selected{% endif %}>Azerbaijan</option>
+                                                <option value="BS" {% if user.country == 'BS' %}selected{% endif %}>Bahamas</option>
+                                                <option value="BH" {% if user.country == 'BH' %}selected{% endif %}>Bahrain</option>
+                                                <option value="BD" {% if user.country == 'BD' %}selected{% endif %}>Bangladesh</option>
+                                                <option value="BB" {% if user.country == 'BB' %}selected{% endif %}>Barbados</option>
+                                                <option value="BY" {% if user.country == 'BY' %}selected{% endif %}>Belarus</option>
+                                                <option value="BE" {% if user.country == 'BE' %}selected{% endif %}>Belgium</option>
+                                                <option value="BZ" {% if user.country == 'BZ' %}selected{% endif %}>Belize</option>
+                                                <option value="BJ" {% if user.country == 'BJ' %}selected{% endif %}>Benin</option>
+                                                <option value="BM" {% if user.country == 'BM' %}selected{% endif %}>Bermuda</option>
+                                                <option value="BT" {% if user.country == 'BT' %}selected{% endif %}>Bhutan</option>
+                                                <option value="BO" {% if user.country == 'BO' %}selected{% endif %}>Bolivia</option>
+                                                <option value="BA" {% if user.country == 'BA' %}selected{% endif %}>Bosnia and Herzegovina</option>
+                                                <option value="BW" {% if user.country == 'BW' %}selected{% endif %}>Botswana</option>
+                                                <option value="BR" {% if user.country == 'BR' %}selected{% endif %}>Brazil</option>
+                                                <option value="BN" {% if user.country == 'BN' %}selected{% endif %}>Brunei</option>
+                                                <option value="BG" {% if user.country == 'BG' %}selected{% endif %}>Bulgaria</option>
+                                                <option value="BF" {% if user.country == 'BF' %}selected{% endif %}>Burkina Faso</option>
+                                                <option value="BI" {% if user.country == 'BI' %}selected{% endif %}>Burundi</option>
+                                                <option value="CV" {% if user.country == 'CV' %}selected{% endif %}>Cabo Verde</option>
+                                                <option value="KH" {% if user.country == 'KH' %}selected{% endif %}>Cambodia</option>
+                                                <option value="CM" {% if user.country == 'CM' %}selected{% endif %}>Cameroon</option>
+                                                <option value="CA" {% if user.country == 'CA' %}selected{% endif %}>Canada</option>
+                                                <option value="KY" {% if user.country == 'KY' %}selected{% endif %}>Cayman Islands</option>
+                                                <option value="CF" {% if user.country == 'CF' %}selected{% endif %}>Central African Republic</option>
+                                                <option value="TD" {% if user.country == 'TD' %}selected{% endif %}>Chad</option>
+                                                <option value="CL" {% if user.country == 'CL' %}selected{% endif %}>Chile</option>
+                                                <option value="CN" {% if user.country == 'CN' %}selected{% endif %}>China</option>
+                                                <option value="CO" {% if user.country == 'CO' %}selected{% endif %}>Colombia</option>
+                                                <option value="KM" {% if user.country == 'KM' %}selected{% endif %}>Comoros</option>
+                                                <option value="CG" {% if user.country == 'CG' %}selected{% endif %}>Congo</option>
+                                                <option value="CD" {% if user.country == 'CD' %}selected{% endif %}>Congo (Democratic Republic)</option>
+                                                <option value="CK" {% if user.country == 'CK' %}selected{% endif %}>Cook Islands</option>
+                                                <option value="CR" {% if user.country == 'CR' %}selected{% endif %}>Costa Rica</option>
+                                                <option value="CI" {% if user.country == 'CI' %}selected{% endif %}>Côte d'Ivoire</option>
+                                                <option value="HR" {% if user.country == 'HR' %}selected{% endif %}>Croatia</option>
+                                                <option value="CU" {% if user.country == 'CU' %}selected{% endif %}>Cuba</option>
+                                                <option value="CW" {% if user.country == 'CW' %}selected{% endif %}>Curaçao</option>
+                                                <option value="CY" {% if user.country == 'CY' %}selected{% endif %}>Cyprus</option>
+                                                <option value="CZ" {% if user.country == 'CZ' %}selected{% endif %}>Czech Republic</option>
+                                                <option value="DK" {% if user.country == 'DK' %}selected{% endif %}>Denmark</option>
+                                                <option value="DJ" {% if user.country == 'DJ' %}selected{% endif %}>Djibouti</option>
+                                                <option value="DM" {% if user.country == 'DM' %}selected{% endif %}>Dominica</option>
+                                                <option value="DO" {% if user.country == 'DO' %}selected{% endif %}>Dominican Republic</option>
+                                                <option value="EC" {% if user.country == 'EC' %}selected{% endif %}>Ecuador</option>
+                                                <option value="EG" {% if user.country == 'EG' %}selected{% endif %}>Egypt</option>
+                                                <option value="SV" {% if user.country == 'SV' %}selected{% endif %}>El Salvador</option>
+                                                <option value="GQ" {% if user.country == 'GQ' %}selected{% endif %}>Equatorial Guinea</option>
+                                                <option value="ER" {% if user.country == 'ER' %}selected{% endif %}>Eritrea</option>
+                                                <option value="EE" {% if user.country == 'EE' %}selected{% endif %}>Estonia</option>
+                                                <option value="SZ" {% if user.country == 'SZ' %}selected{% endif %}>Eswatini</option>
+                                                <option value="ET" {% if user.country == 'ET' %}selected{% endif %}>Ethiopia</option>
+                                                <option value="FK" {% if user.country == 'FK' %}selected{% endif %}>Falkland Islands</option>
+                                                <option value="FO" {% if user.country == 'FO' %}selected{% endif %}>Faroe Islands</option>
+                                                <option value="FJ" {% if user.country == 'FJ' %}selected{% endif %}>Fiji</option>
+                                                <option value="FI" {% if user.country == 'FI' %}selected{% endif %}>Finland</option>
+                                                <option value="FR" {% if user.country == 'FR' %}selected{% endif %}>France</option>
+                                                <option value="GA" {% if user.country == 'GA' %}selected{% endif %}>Gabon</option>
+                                                <option value="GM" {% if user.country == 'GM' %}selected{% endif %}>Gambia</option>
+                                                <option value="GE" {% if user.country == 'GE' %}selected{% endif %}>Georgia</option>
+                                                <option value="DE" {% if user.country == 'DE' %}selected{% endif %}>Germany</option>
+                                                <option value="GH" {% if user.country == 'GH' %}selected{% endif %}>Ghana</option>
+                                                <option value="GI" {% if user.country == 'GI' %}selected{% endif %}>Gibraltar</option>
+                                                <option value="GR" {% if user.country == 'GR' %}selected{% endif %}>Greece</option>
+                                                <option value="GL" {% if user.country == 'GL' %}selected{% endif %}>Greenland</option>
+                                                <option value="GD" {% if user.country == 'GD' %}selected{% endif %}>Grenada</option>
+                                                <option value="GU" {% if user.country == 'GU' %}selected{% endif %}>Guam</option>
+                                                <option value="GT" {% if user.country == 'GT' %}selected{% endif %}>Guatemala</option>
+                                                <option value="GG" {% if user.country == 'GG' %}selected{% endif %}>Guernsey</option>
+                                                <option value="GN" {% if user.country == 'GN' %}selected{% endif %}>Guinea</option>
+                                                <option value="GW" {% if user.country == 'GW' %}selected{% endif %}>Guinea-Bissau</option>
+                                                <option value="GY" {% if user.country == 'GY' %}selected{% endif %}>Guyana</option>
+                                                <option value="HT" {% if user.country == 'HT' %}selected{% endif %}>Haiti</option>
+                                                <option value="HN" {% if user.country == 'HN' %}selected{% endif %}>Honduras</option>
+                                                <option value="HK" {% if user.country == 'HK' %}selected{% endif %}>Hong Kong</option>
+                                                <option value="HU" {% if user.country == 'HU' %}selected{% endif %}>Hungary</option>
+                                                <option value="IS" {% if user.country == 'IS' %}selected{% endif %}>Iceland</option>
+                                                <option value="IN" {% if user.country == 'IN' %}selected{% endif %}>India</option>
+                                                <option value="ID" {% if user.country == 'ID' %}selected{% endif %}>Indonesia</option>
+                                                <option value="IR" {% if user.country == 'IR' %}selected{% endif %}>Iran</option>
+                                                <option value="IQ" {% if user.country == 'IQ' %}selected{% endif %}>Iraq</option>
+                                                <option value="IE" {% if user.country == 'IE' %}selected{% endif %}>Ireland</option>
+                                                <option value="IM" {% if user.country == 'IM' %}selected{% endif %}>Isle of Man</option>
+                                                <option value="IL" {% if user.country == 'IL' %}selected{% endif %}>Israel</option>
+                                                <option value="IT" {% if user.country == 'IT' %}selected{% endif %}>Italy</option>
+                                                <option value="JM" {% if user.country == 'JM' %}selected{% endif %}>Jamaica</option>
+                                                <option value="JP" {% if user.country == 'JP' %}selected{% endif %}>Japan</option>
+                                                <option value="JE" {% if user.country == 'JE' %}selected{% endif %}>Jersey</option>
+                                                <option value="JO" {% if user.country == 'JO' %}selected{% endif %}>Jordan</option>
+                                                <option value="KZ" {% if user.country == 'KZ' %}selected{% endif %}>Kazakhstan</option>
+                                                <option value="KE" {% if user.country == 'KE' %}selected{% endif %}>Kenya</option>
+                                                <option value="KI" {% if user.country == 'KI' %}selected{% endif %}>Kiribati</option>
+                                                <option value="KP" {% if user.country == 'KP' %}selected{% endif %}>Korea (North)</option>
+                                                <option value="KR" {% if user.country == 'KR' %}selected{% endif %}>Korea (South)</option>
+                                                <option value="KW" {% if user.country == 'KW' %}selected{% endif %}>Kuwait</option>
+                                                <option value="KG" {% if user.country == 'KG' %}selected{% endif %}>Kyrgyzstan</option>
+                                                <option value="LA" {% if user.country == 'LA' %}selected{% endif %}>Laos</option>
+                                                <option value="LV" {% if user.country == 'LV' %}selected{% endif %}>Latvia</option>
+                                                <option value="LB" {% if user.country == 'LB' %}selected{% endif %}>Lebanon</option>
+                                                <option value="LS" {% if user.country == 'LS' %}selected{% endif %}>Lesotho</option>
+                                                <option value="LR" {% if user.country == 'LR' %}selected{% endif %}>Liberia</option>
+                                                <option value="LY" {% if user.country == 'LY' %}selected{% endif %}>Libya</option>
+                                                <option value="LI" {% if user.country == 'LI' %}selected{% endif %}>Liechtenstein</option>
+                                                <option value="LT" {% if user.country == 'LT' %}selected{% endif %}>Lithuania</option>
+                                                <option value="LU" {% if user.country == 'LU' %}selected{% endif %}>Luxembourg</option>
+                                                <option value="MO" {% if user.country == 'MO' %}selected{% endif %}>Macao</option>
+                                                <option value="MK" {% if user.country == 'MK' %}selected{% endif %}>Macedonia</option>
+                                                <option value="MG" {% if user.country == 'MG' %}selected{% endif %}>Madagascar</option>
+                                                <option value="MW" {% if user.country == 'MW' %}selected{% endif %}>Malawi</option>
+                                                <option value="MY" {% if user.country == 'MY' %}selected{% endif %}>Malaysia</option>
+                                                <option value="MV" {% if user.country == 'MV' %}selected{% endif %}>Maldives</option>
+                                                <option value="ML" {% if user.country == 'ML' %}selected{% endif %}>Mali</option>
+                                                <option value="MT" {% if user.country == 'MT' %}selected{% endif %}>Malta</option>
+                                                <option value="MH" {% if user.country == 'MH' %}selected{% endif %}>Marshall Islands</option>
+                                                <option value="MR" {% if user.country == 'MR' %}selected{% endif %}>Mauritania</option>
+                                                <option value="MU" {% if user.country == 'MU' %}selected{% endif %}>Mauritius</option>
+                                                <option value="MX" {% if user.country == 'MX' %}selected{% endif %}>Mexico</option>
+                                                <option value="FM" {% if user.country == 'FM' %}selected{% endif %}>Micronesia</option>
+                                                <option value="MD" {% if user.country == 'MD' %}selected{% endif %}>Moldova</option>
+                                                <option value="MC" {% if user.country == 'MC' %}selected{% endif %}>Monaco</option>
+                                                <option value="MN" {% if user.country == 'MN' %}selected{% endif %}>Mongolia</option>
+                                                <option value="ME" {% if user.country == 'ME' %}selected{% endif %}>Montenegro</option>
+                                                <option value="MS" {% if user.country == 'MS' %}selected{% endif %}>Montserrat</option>
+                                                <option value="MA" {% if user.country == 'MA' %}selected{% endif %}>Morocco</option>
+                                                <option value="MZ" {% if user.country == 'MZ' %}selected{% endif %}>Mozambique</option>
+                                                <option value="MM" {% if user.country == 'MM' %}selected{% endif %}>Myanmar</option>
+                                                <option value="NA" {% if user.country == 'NA' %}selected{% endif %}>Namibia</option>
+                                                <option value="NR" {% if user.country == 'NR' %}selected{% endif %}>Nauru</option>
+                                                <option value="NP" {% if user.country == 'NP' %}selected{% endif %}>Nepal</option>
+                                                <option value="NL" {% if user.country == 'NL' %}selected{% endif %}>Netherlands</option>
+                                                <option value="NC" {% if user.country == 'NC' %}selected{% endif %}>New Caledonia</option>
+                                                <option value="NZ" {% if user.country == 'NZ' %}selected{% endif %}>New Zealand</option>
+                                                <option value="NI" {% if user.country == 'NI' %}selected{% endif %}>Nicaragua</option>
+                                                <option value="NE" {% if user.country == 'NE' %}selected{% endif %}>Niger</option>
+                                                <option value="NG" {% if user.country == 'NG' %}selected{% endif %}>Nigeria</option>
+                                                <option value="NU" {% if user.country == 'NU' %}selected{% endif %}>Niue</option>
+                                                <option value="NF" {% if user.country == 'NF' %}selected{% endif %}>Norfolk Island</option>
+                                                <option value="MP" {% if user.country == 'MP' %}selected{% endif %}>Northern Mariana Islands</option>
+                                                <option value="NO" {% if user.country == 'NO' %}selected{% endif %}>Norway</option>
+                                                <option value="OM" {% if user.country == 'OM' %}selected{% endif %}>Oman</option>
+                                                <option value="PK" {% if user.country == 'PK' %}selected{% endif %}>Pakistan</option>
+                                                <option value="PW" {% if user.country == 'PW' %}selected{% endif %}>Palau</option>
+                                                <option value="PS" {% if user.country == 'PS' %}selected{% endif %}>Palestine</option>
+                                                <option value="PA" {% if user.country == 'PA' %}selected{% endif %}>Panama</option>
+                                                <option value="PG" {% if user.country == 'PG' %}selected{% endif %}>Papua New Guinea</option>
+                                                <option value="PY" {% if user.country == 'PY' %}selected{% endif %}>Paraguay</option>
+                                                <option value="PE" {% if user.country == 'PE' %}selected{% endif %}>Peru</option>
+                                                <option value="PH" {% if user.country == 'PH' %}selected{% endif %}>Philippines</option>
+                                                <option value="PN" {% if user.country == 'PN' %}selected{% endif %}>Pitcairn</option>
+                                                <option value="PL" {% if user.country == 'PL' %}selected{% endif %}>Poland</option>
+                                                <option value="PT" {% if user.country == 'PT' %}selected{% endif %}>Portugal</option>
+                                                <option value="PR" {% if user.country == 'PR' %}selected{% endif %}>Puerto Rico</option>
+                                                <option value="QA" {% if user.country == 'QA' %}selected{% endif %}>Qatar</option>
+                                                <option value="RO" {% if user.country == 'RO' %}selected{% endif %}>Romania</option>
+                                                <option value="RU" {% if user.country == 'RU' %}selected{% endif %}>Russia</option>
+                                                <option value="RW" {% if user.country == 'RW' %}selected{% endif %}>Rwanda</option>
+                                                <option value="WS" {% if user.country == 'WS' %}selected{% endif %}>Samoa</option>
+                                                <option value="SM" {% if user.country == 'SM' %}selected{% endif %}>San Marino</option>
+                                                <option value="ST" {% if user.country == 'ST' %}selected{% endif %}>São Tomé and Príncipe</option>
+                                                <option value="SA" {% if user.country == 'SA' %}selected{% endif %}>Saudi Arabia</option>
+                                                <option value="SN" {% if user.country == 'SN' %}selected{% endif %}>Senegal</option>
+                                                <option value="RS" {% if user.country == 'RS' %}selected{% endif %}>Serbia</option>
+                                                <option value="SC" {% if user.country == 'SC' %}selected{% endif %}>Seychelles</option>
+                                                <option value="SL" {% if user.country == 'SL' %}selected{% endif %}>Sierra Leone</option>
+                                                <option value="SG" {% if user.country == 'SG' %}selected{% endif %}>Singapore</option>
+                                                <option value="SX" {% if user.country == 'SX' %}selected{% endif %}>Sint Maarten</option>
+                                                <option value="SK" {% if user.country == 'SK' %}selected{% endif %}>Slovakia</option>
+                                                <option value="SI" {% if user.country == 'SI' %}selected{% endif %}>Slovenia</option>
+                                                <option value="SB" {% if user.country == 'SB' %}selected{% endif %}>Solomon Islands</option>
+                                                <option value="SO" {% if user.country == 'SO' %}selected{% endif %}>Somalia</option>
+                                                <option value="ZA" {% if user.country == 'ZA' %}selected{% endif %}>South Africa</option>
+                                                <option value="SS" {% if user.country == 'SS' %}selected{% endif %}>South Sudan</option>
+                                                <option value="ES" {% if user.country == 'ES' %}selected{% endif %}>Spain</option>
+                                                <option value="LK" {% if user.country == 'LK' %}selected{% endif %}>Sri Lanka</option>
+                                                <option value="SD" {% if user.country == 'SD' %}selected{% endif %}>Sudan</option>
+                                                <option value="SR" {% if user.country == 'SR' %}selected{% endif %}>Suriname</option>
+                                                <option value="SE" {% if user.country == 'SE' %}selected{% endif %}>Sweden</option>
+                                                <option value="CH" {% if user.country == 'CH' %}selected{% endif %}>Switzerland</option>
+                                                <option value="SY" {% if user.country == 'SY' %}selected{% endif %}>Syria</option>
+                                                <option value="TW" {% if user.country == 'TW' %}selected{% endif %}>Taiwan</option>
+                                                <option value="TJ" {% if user.country == 'TJ' %}selected{% endif %}>Tajikistan</option>
+                                                <option value="TZ" {% if user.country == 'TZ' %}selected{% endif %}>Tanzania</option>
+                                                <option value="TH" {% if user.country == 'TH' %}selected{% endif %}>Thailand</option>
+                                                <option value="TL" {% if user.country == 'TL' %}selected{% endif %}>Timor-Leste</option>
+                                                <option value="TG" {% if user.country == 'TG' %}selected{% endif %}>Togo</option>
+                                                <option value="TK" {% if user.country == 'TK' %}selected{% endif %}>Tokelau</option>
+                                                <option value="TO" {% if user.country == 'TO' %}selected{% endif %}>Tonga</option>
+                                                <option value="TT" {% if user.country == 'TT' %}selected{% endif %}>Trinidad and Tobago</option>
+                                                <option value="TN" {% if user.country == 'TN' %}selected{% endif %}>Tunisia</option>
+                                                <option value="TR" {% if user.country == 'TR' %}selected{% endif %}>Turkey</option>
+                                                <option value="TM" {% if user.country == 'TM' %}selected{% endif %}>Turkmenistan</option>
+                                                <option value="TC" {% if user.country == 'TC' %}selected{% endif %}>Turks and Caicos Islands</option>
+                                                <option value="TV" {% if user.country == 'TV' %}selected{% endif %}>Tuvalu</option>
+                                                <option value="UG" {% if user.country == 'UG' %}selected{% endif %}>Uganda</option>
+                                                <option value="UA" {% if user.country == 'UA' %}selected{% endif %}>Ukraine</option>
+                                                <option value="AE" {% if user.country == 'AE' %}selected{% endif %}>United Arab Emirates</option>
+                                                <option value="GB" {% if user.country == 'GB' %}selected{% endif %}>United Kingdom</option>
+                                                <option value="US" {% if user.country == 'US' %}selected{% endif %}>United States</option>
+                                                <option value="UY" {% if user.country == 'UY' %}selected{% endif %}>Uruguay</option>
+                                                <option value="UZ" {% if user.country == 'UZ' %}selected{% endif %}>Uzbekistan</option>
+                                                <option value="VU" {% if user.country == 'VU' %}selected{% endif %}>Vanuatu</option>
+                                                <option value="VA" {% if user.country == 'VA' %}selected{% endif %}>Vatican City</option>
+                                                <option value="VE" {% if user.country == 'VE' %}selected{% endif %}>Venezuela</option>
+                                                <option value="VN" {% if user.country == 'VN' %}selected{% endif %}>Vietnam</option>
+                                                <option value="VG" {% if user.country == 'VG' %}selected{% endif %}>Virgin Islands (British)</option>
+                                                <option value="VI" {% if user.country == 'VI' %}selected{% endif %}>Virgin Islands (U.S.)</option>
+                                                <option value="WF" {% if user.country == 'WF' %}selected{% endif %}>Wallis and Futuna</option>
+                                                <option value="EH" {% if user.country == 'EH' %}selected{% endif %}>Western Sahara</option>
+                                                <option value="YE" {% if user.country == 'YE' %}selected{% endif %}>Yemen</option>
+                                                <option value="ZM" {% if user.country == 'ZM' %}selected{% endif %}>Zambia</option>
+                                                <option value="ZW" {% if user.country == 'ZW' %}selected{% endif %}>Zimbabwe</option>
+                                                <option value="AX" {% if user.country == 'AX' %}selected{% endif %}>Åland Islands</option>
+                                                <option value="BQ" {% if user.country == 'BQ' %}selected{% endif %}>Bonaire, Sint Eustatius and Saba</option>
+                                                <option value="BV" {% if user.country == 'BV' %}selected{% endif %}>Bouvet Island</option>
+                                                <option value="IO" {% if user.country == 'IO' %}selected{% endif %}>British Indian Ocean Territory</option>
+                                                <option value="CX" {% if user.country == 'CX' %}selected{% endif %}>Christmas Island</option>
+                                                <option value="CC" {% if user.country == 'CC' %}selected{% endif %}>Cocos (Keeling) Islands</option>
+                                                <option value="CW" {% if user.country == 'CW' %}selected{% endif %}>Curaçao</option>
+                                                <option value="FK" {% if user.country == 'FK' %}selected{% endif %}>Falkland Islands (Malvinas)</option>
+                                                <option value="FO" {% if user.country == 'FO' %}selected{% endif %}>Faroe Islands</option>
+                                                <option value="GF" {% if user.country == 'GF' %}selected{% endif %}>French Guiana</option>
+                                                <option value="PF" {% if user.country == 'PF' %}selected{% endif %}>French Polynesia</option>
+                                                <option value="TF" {% if user.country == 'TF' %}selected{% endif %}>French Southern Territories</option>
+                                                <option value="GI" {% if user.country == 'GI' %}selected{% endif %}>Gibraltar</option>
+                                                <option value="GL" {% if user.country == 'GL' %}selected{% endif %}>Greenland</option>
+                                                <option value="GP" {% if user.country == 'GP' %}selected{% endif %}>Guadeloupe</option>
+                                                <option value="GU" {% if user.country == 'GU' %}selected{% endif %}>Guam</option>
+                                                <option value="GG" {% if user.country == 'GG' %}selected{% endif %}>Guernsey</option>
+                                                <option value="HM" {% if user.country == 'HM' %}selected{% endif %}>Heard Island and McDonald Islands</option>
+                                                <option value="VA" {% if user.country == 'VA' %}selected{% endif %}>Holy See (Vatican City State)</option>
+                                                <option value="IM" {% if user.country == 'IM' %}selected{% endif %}>Isle of Man</option>
+                                                <option value="JE" {% if user.country == 'JE' %}selected{% endif %}>Jersey</option>
+                                                <option value="KI" {% if user.country == 'KI' %}selected{% endif %}>Kiribati</option>
+                                                <option value="LS" {% if user.country == 'LS' %}selected{% endif %}>Lesotho</option>
+                                                <option value="MO" {% if user.country == 'MO' %}selected{% endif %}>Macao</option>
+                                                <option value="MK" {% if user.country == 'MK' %}selected{% endif %}>Macedonia, the former Yugoslav Republic of</option>
+                                                <option value="MG" {% if user.country == 'MG' %}selected{% endif %}>Madagascar</option>
+                                                <option value="MW" {% if user.country == 'MW' %}selected{% endif %}>Malawi</option>
+                                                <option value="MV" {% if user.country == 'MV' %}selected{% endif %}>Maldives</option>
+                                                <option value="MH" {% if user.country == 'MH' %}selected{% endif %}>Marshall Islands</option>
+                                                <option value="MQ" {% if user.country == 'MQ' %}selected{% endif %}>Martinique</option>
+                                                <option value="YT" {% if user.country == 'YT' %}selected{% endif %}>Mayotte</option>
+                                                <option value="FM" {% if user.country == 'FM' %}selected{% endif %}>Micronesia, Federated States of</option>
+                                                <option value="MD" {% if user.country == 'MD' %}selected{% endif %}>Moldova, Republic of</option>
+                                                <option value="MC" {% if user.country == 'MC' %}selected{% endif %}>Monaco</option>
+                                                <option value="MS" {% if user.country == 'MS' %}selected{% endif %}>Montserrat</option>
+                                                <option value="ME" {% if user.country == 'ME' %}selected{% endif %}>Montenegro</option>
+                                                <option value="NR" {% if user.country == 'NR' %}selected{% endif %}>Nauru</option>
+                                                <option value="NU" {% if user.country == 'NU' %}selected{% endif %}>Niue</option>
+                                                <option value="NF" {% if user.country == 'NF' %}selected{% endif %}>Norfolk Island</option>
+                                                <option value="MP" {% if user.country == 'MP' %}selected{% endif %}>Northern Mariana Islands</option>
+                                                <option value="PW" {% if user.country == 'PW' %}selected{% endif %}>Palau</option>
+                                                <option value="PS" {% if user.country == 'PS' %}selected{% endif %}>Palestine, State of</option>
+                                                <option value="PN" {% if user.country == 'PN' %}selected{% endif %}>Pitcairn</option>
+                                                <option value="RE" {% if user.country == 'RE' %}selected{% endif %}>Réunion</option>
+                                                <option value="BL" {% if user.country == 'BL' %}selected{% endif %}>Saint Barthélemy</option>
+                                                <option value="SH" {% if user.country == 'SH' %}selected{% endif %}>Saint Helena, Ascension and Tristan da Cunha</option>
+                                                <option value="KN" {% if user.country == 'KN' %}selected{% endif %}>Saint Kitts and Nevis</option>
+                                                <option value="LC" {% if user.country == 'LC' %}selected{% endif %}>Saint Lucia</option>
+                                                <option value="MF" {% if user.country == 'MF' %}selected{% endif %}>Saint Martin (French part)</option>
+                                                <option value="PM" {% if user.country == 'PM' %}selected{% endif %}>Saint Pierre and Miquelon</option>
+                                                <option value="VC" {% if user.country == 'VC' %}selected{% endif %}>Saint Vincent and the Grenadines</option>
+                                                <option value="WS" {% if user.country == 'WS' %}selected{% endif %}>Samoa</option>
+                                                <option value="SM" {% if user.country == 'SM' %}selected{% endif %}>San Marino</option>
+                                                <option value="ST" {% if user.country == 'ST' %}selected{% endif %}>Sao Tome and Principe</option>
+                                                <option value="RS" {% if user.country == 'RS' %}selected{% endif %}>Serbia</option>
+                                                <option value="SC" {% if user.country == 'SC' %}selected{% endif %}>Seychelles</option>
+                                                <option value="SX" {% if user.country == 'SX' %}selected{% endif %}>Sint Maarten (Dutch part)</option>
+                                                <option value="SK" {% if user.country == 'SK' %}selected{% endif %}>Slovakia</option>
+                                                <option value="SI" {% if user.country == 'SI' %}selected{% endif %}>Slovenia</option>
+                                                <option value="SB" {% if user.country == 'SB' %}selected{% endif %}>Solomon Islands</option>
+                                                <option value="GS" {% if user.country == 'GS' %}selected{% endif %}>South Georgia and the South Sandwich Islands</option>
+                                                <option value="SS" {% if user.country == 'SS' %}selected{% endif %}>South Sudan</option>
+                                                <option value="SJ" {% if user.country == 'SJ' %}selected{% endif %}>Svalbard and Jan Mayen</option>
+                                                <option value="SZ" {% if user.country == 'SZ' %}selected{% endif %}>Swaziland</option>
+                                                <option value="TW" {% if user.country == 'TW' %}selected{% endif %}>Taiwan, Province of China</option>
+                                                <option value="TJ" {% if user.country == 'TJ' %}selected{% endif %}>Tajikistan</option>
+                                                <option value="TZ" {% if user.country == 'TZ' %}selected{% endif %}>Tanzania, United Republic of</option>
+                                                <option value="TL" {% if user.country == 'TL' %}selected{% endif %}>Timor-Leste</option>
+                                                <option value="TK" {% if user.country == 'TK' %}selected{% endif %}>Tokelau</option>
+                                                <option value="TO" {% if user.country == 'TO' %}selected{% endif %}>Tonga</option>
+                                                <option value="TT" {% if user.country == 'TT' %}selected{% endif %}>Trinidad and Tobago</option>
+                                                <option value="TM" {% if user.country == 'TM' %}selected{% endif %}>Turkmenistan</option>
+                                                <option value="TC" {% if user.country == 'TC' %}selected{% endif %}>Turks and Caicos Islands</option>
+                                                <option value="TV" {% if user.country == 'TV' %}selected{% endif %}>Tuvalu</option>
+                                                <option value="UG" {% if user.country == 'UG' %}selected{% endif %}>Uganda</option>
+                                                <option value="UM" {% if user.country == 'UM' %}selected{% endif %}>United States Minor Outlying Islands</option>
+                                                <option value="UZ" {% if user.country == 'UZ' %}selected{% endif %}>Uzbekistan</option>
+                                                <option value="VU" {% if user.country == 'VU' %}selected{% endif %}>Vanuatu</option>
+                                                <option value="VE" {% if user.country == 'VE' %}selected{% endif %}>Venezuela, Bolivarian Republic of</option>
+                                                <option value="VG" {% if user.country == 'VG' %}selected{% endif %}>Virgin Islands, British</option>
+                                                <option value="VI" {% if user.country == 'VI' %}selected{% endif %}>Virgin Islands, U.S.</option>
+                                                <option value="VN" {% if user.country == 'VN' %}selected{% endif %}>Vietnam</option>
+                                                <option value="WF" {% if user.country == 'WF' %}selected{% endif %}>Wallis and Futuna</option>
+                                                <option value="EH" {% if user.country == 'EH' %}selected{% endif %}>Western Sahara</option>
+                                                <option value="YE" {% if user.country == 'YE' %}selected{% endif %}>Yemen</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="form-label" for="timezone">Timezone</label>
+                                            <select id="timezone" name="timezone" class="form-input">
+                                                <option value="">Select Timezone</option>
+                                                <option value="UTC-12" {% if user.timezone == 'UTC-12' %}selected{% endif %}>(UTC-12:00) Baker Island</option>
+                                                <option value="UTC-11" {% if user.timezone == 'UTC-11' %}selected{% endif %}>(UTC-11:00) American Samoa</option>
+                                                <option value="UTC-10" {% if user.timezone == 'UTC-10' %}selected{% endif %}>(UTC-10:00) Hawaii</option>
+                                                <option value="UTC-9" {% if user.timezone == 'UTC-9' %}selected{% endif %}>(UTC-09:00) Alaska</option>
+                                                <option value="UTC-8" {% if user.timezone == 'UTC-8' %}selected{% endif %}>(UTC-08:00) Pacific Time</option>
+                                                <option value="UTC-7" {% if user.timezone == 'UTC-7' %}selected{% endif %}>(UTC-07:00) Mountain Time</option>
+                                                <option value="UTC-6" {% if user.timezone == 'UTC-6' %}selected{% endif %}>(UTC-06:00) Central Time</option>
+                                                <option value="UTC-5" {% if user.timezone == 'UTC-5' %}selected{% endif %}>(UTC-05:00) Eastern Time</option>
+                                                <option value="UTC-4" {% if user.timezone == 'UTC-4' %}selected{% endif %}>(UTC-04:00) Atlantic Time</option>
+                                                <option value="UTC-3" {% if user.timezone == 'UTC-3' %}selected{% endif %}>(UTC-03:00) Argentina</option>
+                                                <option value="UTC-2" {% if user.timezone == 'UTC-2' %}selected{% endif %}>(UTC-02:00) South Georgia</option>
+                                                <option value="UTC-1" {% if user.timezone == 'UTC-1' %}selected{% endif %}>(UTC-01:00) Azores</option>
+                                                <option value="UTC+0" {% if user.timezone == 'UTC+0' %}selected{% endif %}>(UTC+00:00) GMT</option>
+                                                <option value="UTC+1" {% if user.timezone == 'UTC+1' %}selected{% endif %}>(UTC+01:00) Central European Time</option>
+                                                <option value="UTC+2" {% if user.timezone == 'UTC+2' %}selected{% endif %}>(UTC+02:00) Eastern European Time</option>
+                                                <option value="UTC+3" {% if user.timezone == 'UTC+3' %}selected{% endif %}>(UTC+03:00) Moscow</option>
+                                                <option value="UTC+4" {% if user.timezone == 'UTC+4' %}selected{% endif %}>(UTC+04:00) Dubai</option>
+                                                <option value="UTC+5" {% if user.timezone == 'UTC+5' %}selected{% endif %}>(UTC+05:00) Karachi</option>
+                                                <option value="UTC+5.5" {% if user.timezone == 'UTC+5.5' %}selected{% endif %}>(UTC+05:30) India</option>
+                                                <option value="UTC+6" {% if user.timezone == 'UTC+6' %}selected{% endif %}>(UTC+06:00) Dhaka</option>
+                                                <option value="UTC+7" {% if user.timezone == 'UTC+7' %}selected{% endif %}>(UTC+07:00) Bangkok</option>
+                                                <option value="UTC+8" {% if user.timezone == 'UTC+8' %}selected{% endif %}>(UTC+08:00) Singapore</option>
+                                                <option value="UTC+9" {% if user.timezone == 'UTC+9' %}selected{% endif %}>(UTC+09:00) Tokyo</option>
+                                                <option value="UTC+10" {% if user.timezone == 'UTC+10' %}selected{% endif %}>(UTC+10:00) Sydney</option>
+                                                <option value="UTC+11" {% if user.timezone == 'UTC+11' %}selected{% endif %}>(UTC+11:00) Solomon Islands</option>
+                                                <option value="UTC+12" {% if user.timezone == 'UTC+12' %}selected{% endif %}>(UTC+12:00) Fiji</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                             <label class="form-label" for="bio">Bio</label>
+                                             <textarea id="bio" name="bio" class="form-input bio-textarea" rows="3" style="color: #f8fafc; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">{{ user.bio or '' }}</textarea>
+                                         </div>
+                                    </div>
+                                    
+                                    <div class="pt-6 border-t border-gray-800 flex justify-end">
+                                        <button type="button" class="trading-btn trading-btn-primary" id="update-profile-btn">
+                                            <i class="fas fa-save mr-2"></i> Update Profile
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Trading Profile -->
+                            <div class="glass rounded-2xl p-6 animate-fade-in" style="animation-delay: 0.1s">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold">Trading Profile</h3>
+                                    <button class="trading-btn trading-btn-secondary" id="update-trading-profile-btn">
+                                        <i class="fas fa-edit mr-2"></i> Update
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <div class="text-sm text-gray-400 mb-2">Trading Experience</div>
+                                        <div class="text-lg font-bold">{{ user.experience or 'Not set' }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-400 mb-2">Primary Market</div>
+                                        <div class="text-lg font-bold">{{ user.trading_type or 'Not set' }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-400 mb-2">Risk Tolerance</div>
+                                        <div class="text-lg font-bold">Medium-High</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-400 mb-2">Trading Style</div>
+                                        <div class="text-lg font-bold">Swing Trading</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Security Tab -->
+                        <div id="security-tab" class="tab-content hidden">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold">Security Settings</h3>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-shield-alt mr-1"></i> Secure
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-6">
+                                    <!-- Password -->
+                                    <div class="bg-gray-900/30 rounded-xl p-5">
+                                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                            <div>
+                                                <div class="font-bold">Password</div>
+                                                <div class="text-sm text-gray-400">Last changed 30 days ago</div>
+                                            </div>
+                                            <button class="trading-btn trading-btn-secondary mt-3 md:mt-0" id="change-password-btn">
+                                                <i class="fas fa-key mr-2"></i> Change Password
+                                            </button>
+                                        </div>
+                                        
+                                        <form id="password-form" class="space-y-4 hidden">
+                                            <div>
+                                                <label class="form-label" for="current-password">Current Password</label>
+                                                <input type="password" id="current-password" class="form-input">
+                                            </div>
+                                            <div>
+                                                <label class="form-label" for="new-password">New Password</label>
+                                                <input type="password" id="new-password" class="form-input">
+                                            </div>
+                                            <div>
+                                                <label class="form-label" for="confirm-password">Confirm New Password</label>
+                                                <input type="password" id="confirm-password" class="form-input">
+                                            </div>
+                                            <div class="flex space-x-3">
+                                                <button type="button" class="trading-btn trading-btn-secondary" id="cancel-password-btn">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit" class="trading-btn trading-btn-primary">
+                                                    Update Password
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Two-Factor Authentication -->
+                                    <div class="bg-gray-900/30 rounded-xl p-5">
+                                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                            <div>
+                                                <div class="font-bold">Two-Factor Authentication</div>
+                                                <div class="text-sm text-gray-400">Add an extra layer of security</div>
+                                            </div>
+                                            <div class="flex items-center space-x-3 mt-3 md:mt-0">
+                                                <span class="text-green-400 text-sm font-medium">Enabled</span>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="2fa-toggle" {% if user.enable_2fa %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div class="flex items-center p-3 bg-gray-900/50 rounded-lg">
+                                                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="fas fa-mobile-alt text-blue-400"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">Authenticator App</div>
+                                                    <div class="text-sm text-gray-400">Google Authenticator</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center p-3 bg-gray-900/50 rounded-lg">
+                                                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="fas fa-sms text-green-400"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">SMS Authentication</div>
+                                                    <div class="text-sm text-gray-400">+1 (555) 123-4567</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Active Sessions -->
+                                    <div class="bg-gray-900/30 rounded-xl p-5">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div>
+                                                <div class="font-bold">Active Sessions</div>
+                                                <div class="text-sm text-gray-400">Manage your logged-in devices</div>
+                                            </div>
+                                            <button class="trading-btn trading-btn-secondary" id="logout-all-btn">
+                                                <i class="fas fa-sign-out-alt mr-2"></i> Logout All
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                        <i class="fab fa-chrome text-blue-400"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium">Chrome on Windows</div>
+                                                        <div class="text-sm text-gray-400">New York, USA • Current Session</div>
+                                                    </div>
+                                                </div>
+                                                <span class="text-green-400 text-sm font-medium">Active</span>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                        <i class="fas fa-mobile-alt text-purple-400"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium">Safari on iPhone</div>
+                                                        <div class="text-sm text-gray-400">Last active 2 hours ago</div>
+                                                    </div>
+                                                </div>
+                                                <button class="text-red-400 hover:text-red-300 text-sm font-medium">
+                                                    <i class="fas fa-times mr-1"></i> Revoke
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="w-10 h-10 bg-gray-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                        <i class="fas fa-desktop text-gray-400"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium">Firefox on MacOS</div>
+                                                        <div class="text-sm text-gray-400">Last active 3 days ago</div>
+                                                    </div>
+                                                </div>
+                                                <button class="text-red-400 hover:text-red-300 text-sm font-medium">
+                                                    <i class="fas fa-times mr-1"></i> Revoke
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preferences Tab -->
+                        <div id="preferences-tab" class="tab-content hidden">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <h3 class="text-xl font-bold mb-6">Preferences</h3>
+                                
+                                <form id="preferences-form" class="space-y-6">
+                                    <!-- Theme -->
+                                    <div class="flex items-center justify-between p-5 bg-gray-900/30 rounded-xl">
+                                        <div>
+                                            <div class="font-bold">Theme</div>
+                                            <div class="text-sm text-gray-400">Choose your preferred theme</div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button type="button" class="trading-btn trading-btn-secondary {% if user.theme == 'dark' %}active{% endif %}" data-theme="dark">
+                                                <i class="fas fa-moon mr-2"></i> Dark
+                                            </button>
+                                            <button type="button" class="trading-btn trading-btn-secondary {% if user.theme == 'light' %}active{% endif %}" data-theme="light">
+                                                <i class="fas fa-sun mr-2"></i> Light
+                                            </button>
+                                            <button type="button" class="trading-btn trading-btn-secondary {% if user.theme == 'auto' %}active{% endif %}" data-theme="auto">
+                                                <i class="fas fa-adjust mr-2"></i> Auto
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <!-- Trading Preferences -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="font-bold mb-4">Trading Preferences</div>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Default Chart Type</div>
+                                                    <div class="text-sm text-gray-400">Preferred chart view</div>
+                                                </div>
+                                                <select name="chart_type" class="form-input w-48">
+                                                    <option value="candlestick" {% if user.chart_type == 'candlestick' %}selected{% endif %}>Candlestick</option>
+                                                    <option value="line" {% if user.chart_type == 'line' %}selected{% endif %}>Line</option>
+                                                    <option value="area" {% if user.chart_type == 'area' %}selected{% endif %}>Area</option>
+                                                    <option value="heikin-ashi" {% if user.chart_type == 'heikin-ashi' %}selected{% endif %}>Heikin-Ashi</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Default Timeframe</div>
+                                                    <div class="text-sm text-gray-400">Default chart timeframe</div>
+                                                </div>
+                                                <select name="default_timeframe" class="form-input w-48">
+                                                    <option value="1m" {% if user.default_timeframe == '1m' %}selected{% endif %}>1 Minute</option>
+                                                    <option value="5m" {% if user.default_timeframe == '5m' %}selected{% endif %}>5 Minutes</option>
+                                                    <option value="15m" {% if user.default_timeframe == '15m' %}selected{% endif %}>15 Minutes</option>
+                                                    <option value="1h" {% if user.default_timeframe == '1h' %}selected{% endif %}>1 Hour</option>
+                                                    <option value="4h" {% if user.default_timeframe == '4h' %}selected{% endif %}>4 Hours</option>
+                                                    <option value="1d" {% if user.default_timeframe == '1d' %}selected{% endif %}>1 Day</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Price Alerts</div>
+                                                    <div class="text-sm text-gray-400">Receive price alerts</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="price_alerts" {% if user.price_alerts %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Privacy Settings -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="font-bold mb-4">Privacy Settings</div>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Show Trading Stats</div>
+                                                    <div class="text-sm text-gray-400">Display your stats publicly</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="show_trading_stats" {% if user.show_trading_stats %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Allow Messages</div>
+                                                    <div class="text-sm text-gray-400">Receive messages from other traders</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="allow_messages" {% if user.allow_messages %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Email Marketing</div>
+                                                    <div class="text-sm text-gray-400">Receive promotional emails</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="email_marketing" {% if user.email_marketing %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Save Button -->
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="trading-btn trading-btn-primary">
+                                            <i class="fas fa-save mr-2"></i> Save Preferences
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Notifications Tab -->
+                        <div id="notifications-tab" class="tab-content hidden">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <h3 class="text-xl font-bold mb-6">Notification Settings</h3>
+                                
+                                <form id="notifications-form" class="space-y-6">
+                                    <!-- Email Notifications -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="font-bold mb-4">Email Notifications</div>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Trade Confirmations</div>
+                                                    <div class="text-sm text-gray-400">Receive email for each trade</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Price Alerts</div>
+                                                    <div class="text-sm text-gray-400">Price target reached alerts</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-switch"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Security Alerts</div>
+                                                    <div class="text-sm text-gray-400">Login attempts and security events</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Weekly Reports</div>
+                                                    <div class="text-sm text-gray-400">Weekly trading performance reports</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Push Notifications -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="font-bold mb-4">Push Notifications</div>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Trade Executions</div>
+                                                    <div class="text-sm text-gray-400">Real-time trade notifications</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="push_notifications" {% if user.push_notifications %}checked{% endif %}>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Market News</div>
+                                                    <div class="text-sm text-gray-400">Breaking market news</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="market_news">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Funding Rate Updates</div>
+                                                    <div class="text-sm text-gray-400">Futures funding rate changes</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="funding_updates" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium">Liquidation Warnings</div>
+                                                    <div class="text-sm text-gray-400">Position liquidation warnings</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="liquidation_warnings" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- SMS Notifications -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div>
+                                                <div class="font-bold">SMS Notifications</div>
+                                                <div class="text-sm text-gray-400">+1 (555) 123-4567</div>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="sms-toggle" {% if user.sms_notifications %}checked{% endif %}>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="text-sm text-gray-400">
+                                            Receive critical alerts via SMS. Standard messaging rates may apply.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Save Button -->
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="trading-btn trading-btn-primary">
+                                            <i class="fas fa-save mr-2"></i> Save Notification Settings
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Billing Tab -->
+                        <div id="billing-tab" class="tab-content hidden">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold">Billing & Subscription</h3>
+                                    <span class="badge badge-premium">
+                                        <i class="fas fa-crown mr-1"></i> Professional Plan
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-6">
+                                    <!-- Current Plan -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                            <div>
+                                                <div class="font-bold text-lg">Professional Plan</div>
+                                                <div class="text-sm text-gray-400">$49.99/month • Next billing: Feb 15, 2024</div>
+                                            </div>
+                                            <button class="trading-btn trading-btn-secondary mt-3 md:mt-0">
+                                                <i class="fas fa-sync-alt mr-2"></i> Change Plan
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                            <div class="text-center p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="text-2xl font-bold text-green-400">Unlimited</div>
+                                                <div class="text-sm text-gray-400">API Calls</div>
+                                            </div>
+                                            <div class="text-center p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="text-2xl font-bold">50+</div>
+                                                <div class="text-sm text-gray-400">Indicators</div>
+                                            </div>
+                                            <div class="text-center p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="text-2xl font-bold">Priority</div>
+                                                <div class="text-sm text-gray-400">Support</div>
+                                            </div>
+                                            <div class="text-center p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="text-2xl font-bold">Advanced</div>
+                                                <div class="text-sm text-gray-400">Analytics</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Binance API Connection -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="font-bold">Binance Account</div>
+                                            <button class="trading-btn trading-btn-secondary" id="connect-binance-btn">
+                                                <i class="fab fa-bitcoin mr-2"></i> {% if user.binance_api_key %}Update{% else %}Connect{% endif %} API Keys
+                                            </button>
+                                        </div>
+
+                                        <div id="binance-form" class="space-y-4 hidden">
+                                            <div>
+                                                <label class="form-label" for="binance-api-key">API Key</label>
+                                                <input type="password" id="binance-api-key" class="form-input" placeholder="Your Binance API Key">
+                                            </div>
+                                            <div>
+                                                <label class="form-label" for="binance-secret-key">Secret Key</label>
+                                                <input type="password" id="binance-secret-key" class="form-input" placeholder="Your Binance Secret Key">
+                                            </div>
+                                            <div class="flex space-x-3">
+                                                <button type="button" class="trading-btn trading-btn-secondary" id="cancel-binance-btn">
+                                                    Cancel
+                                                </button>
+                                                <button type="button" class="trading-btn trading-btn-primary" id="save-binance-btn">
+                                                    Save Keys
+                                                </button>
+                                            </div>
+                                            <div class="text-sm text-gray-400">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Your API keys are encrypted and stored securely. Only read permissions are required.
+                                            </div>
+                                        </div>
+
+                                        {% if user.binance_api_key %}
+                                        <div id="binance-connected" class="flex items-center p-3 bg-green-500/10 rounded-lg">
+                                            <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fab fa-bitcoin text-green-400"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="font-medium text-green-400">Binance Account Connected</div>
+                                                <div class="text-sm text-gray-400">API keys configured and validated</div>
+                                            </div>
+                                            <button class="text-blue-400 hover:text-blue-300" id="view-balances-btn">
+                                                <i class="fas fa-eye mr-1"></i> View Balances
+                                            </button>
+                                        </div>
+
+                                        <div id="balances-section" class="mt-4 space-y-3 hidden">
+                                            <div class="font-medium mb-2">Account Balances</div>
+                                            <div id="balances-list" class="space-y-2">
+                                                <!-- Balances will be loaded here -->
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Payment Method -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="font-bold">Payment Method</div>
+                                            <button class="trading-btn trading-btn-secondary">
+                                                <i class="fas fa-plus mr-2"></i> Add New
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mr-4">
+                                                        <i class="fab fa-cc-visa text-blue-400 text-xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium">Visa •••• 4242</div>
+                                                        <div class="text-sm text-gray-400">Expires 12/2025 • Primary</div>
+                                                    </div>
+                                                </div>
+                                                <button class="text-blue-400 hover:text-blue-300">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="w-12 h-12 bg-gray-500/20 rounded-lg flex items-center justify-center mr-4">
+                                                        <i class="fab fa-paypal text-gray-400 text-xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium">PayPal</div>
+                                                        <div class="text-sm text-gray-400">demo@cryptofuturespro.com</div>
+                                                    </div>
+                                                </div>
+                                                <button class="text-red-400 hover:text-red-300">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Billing History -->
+                                    <div class="p-5 bg-gray-900/30 rounded-xl">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="font-bold">Billing History</div>
+                                            <button class="trading-btn trading-btn-secondary">
+                                                <i class="fas fa-download mr-2"></i> Export All
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr class="text-left text-gray-400 border-b border-gray-800">
+                                                        <th class="pb-3 font-medium">Date</th>
+                                                        <th class="pb-3 font-medium">Description</th>
+                                                        <th class="pb-3 font-medium">Amount</th>
+                                                        <th class="pb-3 font-medium">Status</th>
+                                                        <th class="pb-3 font-medium">Invoice</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="border-b border-gray-800/50">
+                                                        <td class="py-4">Jan 15, 2024</td>
+                                                        <td class="py-4">Professional Plan</td>
+                                                        <td class="py-4 font-bold">$49.99</td>
+                                                        <td class="py-4">
+                                                            <span class="badge badge-success">Paid</span>
+                                                        </td>
+                                                        <td class="py-4">
+                                                            <button class="text-blue-400 hover:text-blue-300">
+                                                                <i class="fas fa-download"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="border-b border-gray-800/50">
+                                                        <td class="py-4">Dec 15, 2023</td>
+                                                        <td class="py-4">Professional Plan</td>
+                                                        <td class="py-4 font-bold">$49.99</td>
+                                                        <td class="py-4">
+                                                            <span class="badge badge-success">Paid</span>
+                                                        </td>
+                                                        <td class="py-4">
+                                                            <button class="text-blue-400 hover:text-blue-300">
+                                                                <i class="fas fa-download"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-4">Nov 15, 2023</td>
+                                                        <td class="py-4">Professional Plan</td>
+                                                        <td class="py-4 font-bold">$49.99</td>
+                                                        <td class="py-4">
+                                                            <span class="badge badge-success">Paid</span>
+                                                        </td>
+                                                        <td class="py-4">
+                                                            <button class="text-blue-400 hover:text-blue-300">
+                                                                <i class="fas fa-download"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Tab -->
+                        <div id="activity-tab" class="tab-content hidden">
+                            <div class="glass rounded-2xl p-6 animate-fade-in">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold">Recent Activity</h3>
+                                    <button class="trading-btn trading-btn-secondary">
+                                        <i class="fas fa-filter mr-2"></i> Filter
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-6">
+                                    <!-- Timeline -->
+                                    <div class="timeline">
+                                        <div class="timeline-item">
+                                            <div class="bg-gray-900/30 rounded-xl p-4">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="font-medium">Password Changed</div>
+                                                    <div class="text-sm text-gray-400">2 hours ago</div>
+                                                </div>
+                                                <div class="text-sm text-gray-300">
+                                                    Your account password was successfully updated.
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-2">
+                                                    <i class="fas fa-laptop mr-1"></i> Chrome on Windows • New York, USA
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="bg-gray-900/30 rounded-xl p-4">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="font-medium">Trade Executed</div>
+                                                    <div class="text-sm text-gray-400">5 hours ago</div>
+                                                </div>
+                                                <div class="text-sm text-gray-300">
+                                                    BTC/USDT Long position opened at $42,240.50
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-2">
+                                                    <i class="fas fa-chart-line mr-1"></i> Futures Trading
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="bg-gray-900/30 rounded-xl p-4">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="font-medium">API Key Added</div>
+                                                    <div class="text-sm text-gray-400">2 days ago</div>
+                                                </div>
+                                                <div class="text-sm text-gray-300">
+                                                    New Binance API key added with read-only permissions.
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-2">
+                                                    <i class="fas fa-key mr-1"></i> API Management
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="bg-gray-900/30 rounded-xl p-4">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="font-medium">Profile Updated</div>
+                                                    <div class="text-sm text-gray-400">1 week ago</div>
+                                                </div>
+                                                <div class="text-sm text-gray-300">
+                                                    Updated trading preferences and notification settings.
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-2">
+                                                    <i class="fas fa-user-edit mr-1"></i> Profile Settings
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="bg-gray-900/30 rounded-xl p-4">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="font-medium">Plan Upgraded</div>
+                                                    <div class="text-sm text-gray-400">2 weeks ago</div>
+                                                </div>
+                                                <div class="text-sm text-gray-300">
+                                                    Upgraded from Basic to Professional plan.
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-2">
+                                                    <i class="fas fa-crown mr-1"></i> Billing
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Load More -->
+                                    <div class="text-center">
+                                        <button class="trading-btn trading-btn-secondary">
+                                            <i class="fas fa-history mr-2"></i> Load More Activity
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Account Statistics -->
+                            <div class="glass rounded-2xl p-6 animate-fade-in" style="animation-delay: 0.1s">
+                                <h3 class="text-xl font-bold mb-6">Account Statistics</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="stat-card text-center">
+                                        <div class="text-2xl font-bold">342</div>
+                                        <div class="text-sm text-gray-400">Total Logins</div>
+                                    </div>
+                                    <div class="stat-card text-center">
+                                        <div class="text-2xl font-bold">124</div>
+                                        <div class="text-sm text-gray-400">Trades Made</div>
+                                    </div>
+                                    <div class="stat-card text-center">
+                                        <div class="text-2xl font-bold">89</div>
+                                        <div class="text-sm text-gray-400">API Calls</div>
+                                    </div>
+                                    <div class="stat-card text-center">
+                                        <div class="text-2xl font-bold">15</div>
+                                        <div class="text-sm text-gray-400">Sessions</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Trading Profile Update Modal -->
+    <div id="trading-profile-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50" id="trading-modal-backdrop"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md mx-4">
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">Update Trading Profile</h3>
+                    <button class="text-gray-400 hover:text-white" id="close-trading-modal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form id="trading-profile-form" class="space-y-6">
+                    <div>
+                        <label class="form-label" for="experience">Trading Experience</label>
+                        <select id="experience" name="experience" class="form-input">
+                            <option value="">Select Experience</option>
+                            <option value="beginner" {% if user.experience == 'beginner' %}selected{% endif %}>Beginner (0-1 year)</option>
+                            <option value="intermediate" {% if user.experience == 'intermediate' %}selected{% endif %}>Intermediate (1-3 years)</option>
+                            <option value="advanced" {% if user.experience == 'advanced' %}selected{% endif %}>Advanced (3-5 years)</option>
+                            <option value="expert" {% if user.experience == 'expert' %}selected{% endif %}>Expert (5+ years)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="trading_type">Primary Market</label>
+                        <select id="trading_type" name="trading_type" class="form-input">
+                            <option value="">Select Market</option>
+                            <option value="spot" {% if user.trading_type == 'spot' %}selected{% endif %}>Spot Trading</option>
+                            <option value="futures" {% if user.trading_type == 'futures' %}selected{% endif %}>Futures & Derivatives</option>
+                            <option value="options" {% if user.trading_type == 'options' %}selected{% endif %}>Options</option>
+                            <option value="forex" {% if user.trading_type == 'forex' %}selected{% endif %}>Forex</option>
+                            <option value="crypto" {% if user.trading_type == 'crypto' %}selected{% endif %}>Cryptocurrency</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="risk_tolerance">Risk Tolerance</label>
+                        <select id="risk_tolerance" name="risk_tolerance" class="form-input">
+                            <option value="low">Low Risk</option>
+                            <option value="medium" selected>Medium Risk</option>
+                            <option value="high">High Risk</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="trading_style">Trading Style</label>
+                        <select id="trading_style" name="trading_style" class="form-input">
+                            <option value="day">Day Trading</option>
+                            <option value="swing" selected>Swing Trading</option>
+                            <option value="position">Position Trading</option>
+                            <option value="scalping">Scalping</option>
+                        </select>
+                    </div>
+
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" class="trading-btn trading-btn-secondary flex-1" id="cancel-trading-btn">
+                            Cancel
+                        </button>
+                        <button type="submit" class="trading-btn trading-btn-primary flex-1">
+                            <i class="fas fa-save mr-2"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="/dashboard" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="balances.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="futures_chart.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-chart-candlestick text-lg mb-1"></i>
+                <span class="text-xs">Futures</span>
+            </a>
+            <a href="/profile" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-user text-lg mb-1"></i>
+                <span class="text-xs">Profile</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        console.log('Profile page JavaScript loaded');
+
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const editPersonalBtn = document.getElementById('edit-personal-btn');
+        const personalForm = document.getElementById('personal-form');
+        const personalFormActions = document.getElementById('personal-form-actions');
+        const updateProfileBtn = document.getElementById('update-profile-btn');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const passwordForm = document.getElementById('password-form');
+        const cancelPasswordBtn = document.getElementById('cancel-password-btn');
+        const changeAvatarBtn = document.getElementById('change-avatar-btn');
+        const avatarInput = document.getElementById('avatar-input');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const logoutBtn = document.getElementById('logout-btn');
+        const logoutAllBtn = document.getElementById('logout-all-btn');
+        const exportDataBtn = document.getElementById('export-data');
+        const twoFAToggle = document.getElementById('2fa-toggle');
+        const smsToggle = document.getElementById('sms-toggle');
+        const connectBinanceBtn = document.getElementById('connect-binance-btn');
+        const binanceForm = document.getElementById('binance-form');
+        const cancelBinanceBtn = document.getElementById('cancel-binance-btn');
+        const saveBinanceBtn = document.getElementById('save-binance-btn');
+        const viewBalancesBtn = document.getElementById('view-balances-btn');
+        const balancesSection = document.getElementById('balances-section');
+        const balancesList = document.getElementById('balances-list');
+        const updateTradingProfileBtn = document.getElementById('update-trading-profile-btn');
+        const tradingProfileModal = document.getElementById('trading-profile-modal');
+        const tradingModalBackdrop = document.getElementById('trading-modal-backdrop');
+        const closeTradingModal = document.getElementById('close-trading-modal');
+        const cancelTradingBtn = document.getElementById('cancel-trading-btn');
+        const tradingProfileForm = document.getElementById('trading-profile-form');
+        const bioTextarea = document.getElementById('bio');
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', toggleMobileMenu);
+        }
+        
+        // Tab Switching
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Show corresponding tab content
+                tabContents.forEach(content => content.classList.add('hidden'));
+                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+            });
+        });
+        
+        // Update Profile Button
+        if (updateProfileBtn) {
+            updateProfileBtn.addEventListener('click', async () => {
+                const submitBtn = updateProfileBtn;
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Updating';
+                submitBtn.disabled = true;
+
+                try {
+                    const formData = new FormData(personalForm);
+                    // Remove email from form data to prevent it from being updated
+                    formData.delete('email');
+
+                    const response = await fetch('/api/profile/personal', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification(result.message || 'Profile updated successfully', 'success');
+                    } else {
+                        showNotification(result.detail || 'Error updating profile', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('Error updating profile', 'error');
+                } finally {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        
+        // Change Password
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', () => {
+                passwordForm.classList.toggle('hidden');
+            });
+        }
+        
+        // Cancel Password Change
+        if (cancelPasswordBtn) {
+            cancelPasswordBtn.addEventListener('click', () => {
+                passwordForm.classList.add('hidden');
+                passwordForm.reset();
+            });
+        }
+        
+        // Password Form Submission
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Updating';
+                submitBtn.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled = false;
+                    passwordForm.classList.add('hidden');
+                    passwordForm.reset();
+                    
+                    showNotification('Password updated successfully', 'success');
+                }, 2000);
+            });
+        }
+        
+        // Avatar Upload
+        if (changeAvatarBtn) {
+            changeAvatarBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (avatarInput) {
+                    avatarInput.click();
+                }
+            });
+        }
+        
+        console.log('Setting up avatar input listener');
+        if (avatarInput) {
+            console.log('Avatar input found:', avatarInput);
+            avatarInput.addEventListener('change', async function(e) {
+                console.log('Change event fired');
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('File selected:', file.name, file.size, file.type);
+
+                    // Show loading
+                    const originalHTML = changeAvatarBtn.innerHTML;
+                    changeAvatarBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
+                    changeAvatarBtn.disabled = true;
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('avatar', file);
+
+                        console.log('Sending request to /api/profile/avatar');
+                        const response = await fetch('/api/profile/avatar', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        console.log('Response status:', response.status);
+                        const result = await response.json();
+                        console.log('Response result:', result);
+
+                        if (response.ok) {
+                            if (result.avatar_url) {
+                                profileAvatar.src = result.avatar_url + '?t=' + Date.now(); // Cache busting
+                                showNotification(result.message || 'Avatar uploaded successfully', 'success');
+                            } else {
+                                showNotification('Avatar uploaded but no URL returned', 'warning');
+                            }
+                        } else {
+                            showNotification(result.detail || 'Error uploading avatar', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showNotification('Error uploading avatar: ' + error.message, 'error');
+                    } finally {
+                        changeAvatarBtn.innerHTML = originalHTML;
+                        changeAvatarBtn.disabled = false;
+                    }
+                }
+            });
+        }
+        
+        // Logout
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    // Simulate logout
+                    showNotification('Logging out...', 'info');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                }
+            });
+        }
+        
+        // Logout All Sessions
+        if (logoutAllBtn) {
+            logoutAllBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout from all devices? This will end all active sessions.')) {
+                    // Simulate logout all
+                    showNotification('Logging out from all devices...', 'info');
+                    setTimeout(() => {
+                        showNotification('All sessions terminated successfully', 'success');
+                    }, 2000);
+                }
+            });
+        }
+        
+        // Export Data
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', async () => {
+                try {
+                    showNotification('Preparing data export...', 'info');
+
+                    const response = await fetch('/api/profile/export');
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'profile_export.json';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        showNotification('Data export downloaded successfully', 'success');
+                    } else {
+                        const result = await response.json();
+                        showNotification(result.detail || 'Error exporting data', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('Error exporting data', 'error');
+                }
+            });
+        }
+        
+        // 2FA Toggle
+        if (twoFAToggle) {
+            twoFAToggle.addEventListener('change', async function() {
+                const enabled = this.checked;
+
+                if (!enabled) {
+                    if (!confirm('Disabling 2FA reduces your account security. Are you sure?')) {
+                        this.checked = true;
+                        return;
+                    }
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('enabled', enabled);
+
+                    const response = await fetch('/api/profile/2fa', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification(result.message, 'success');
+                    } else {
+                        showNotification(result.detail || 'Error updating 2FA', 'error');
+                        this.checked = !enabled; // Revert on error
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('Error updating 2FA', 'error');
+                    this.checked = !enabled; // Revert on error
+                }
+            });
+        }
+        
+        // SMS Toggle
+        if (smsToggle) {
+            smsToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    showNotification('SMS notifications enabled', 'success');
+                } else {
+                    showNotification('SMS notifications disabled', 'info');
+                }
+            });
+        }
+
+        // Binance Connection
+        if (connectBinanceBtn) {
+            connectBinanceBtn.addEventListener('click', () => {
+                binanceForm.classList.toggle('hidden');
+            });
+        }
+
+        if (cancelBinanceBtn) {
+            cancelBinanceBtn.addEventListener('click', () => {
+                binanceForm.classList.add('hidden');
+                document.getElementById('binance-api-key').value = '';
+                document.getElementById('binance-secret-key').value = '';
+            });
+        }
+
+        if (saveBinanceBtn) {
+            saveBinanceBtn.addEventListener('click', async () => {
+                const apiKey = document.getElementById('binance-api-key').value.trim();
+                const secretKey = document.getElementById('binance-secret-key').value.trim();
+
+                if (!apiKey || !secretKey) {
+                    showNotification('Please enter both API key and secret key', 'error');
+                    return;
+                }
+
+                const originalHTML = saveBinanceBtn.innerHTML;
+                saveBinanceBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Saving';
+                saveBinanceBtn.disabled = true;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('api_key', apiKey);
+                    formData.append('secret_key', secretKey);
+
+                    const response = await fetch('/api/profile/binance-keys', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification(result.message, 'success');
+                        binanceForm.classList.add('hidden');
+                        document.getElementById('binance-api-key').value = '';
+                        document.getElementById('binance-secret-key').value = '';
+                        setTimeout(() => location.reload(), 1500); // Reload to show connected state
+                    } else {
+                        showNotification(result.detail || 'Error saving API keys', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('Error saving API keys', 'error');
+                } finally {
+                    saveBinanceBtn.innerHTML = originalHTML;
+                    saveBinanceBtn.disabled = false;
+                }
+            });
+        }
+
+        if (viewBalancesBtn) {
+            viewBalancesBtn.addEventListener('click', async () => {
+                balancesSection.classList.toggle('hidden');
+
+                if (!balancesSection.classList.contains('hidden')) {
+                    // Load balances
+                    try {
+                        const response = await fetch('/api/profile/binance-balance');
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            balancesList.innerHTML = '';
+                            result.balances.forEach(balance => {
+                                const balanceItem = document.createElement('div');
+                                balanceItem.className = 'flex items-center justify-between p-3 bg-gray-900/50 rounded-lg';
+                                balanceItem.innerHTML = `
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                            <span class="font-bold text-blue-400 text-sm">${balance.asset}</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">${balance.asset}</div>
+                                            <div class="text-sm text-gray-400">${balance.free.toFixed(8)} free</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold">${balance.total.toFixed(8)}</div>
+                                        <div class="text-sm text-gray-400">${balance.locked.toFixed(8)} locked</div>
+                                    </div>
+                                `;
+                                balancesList.appendChild(balanceItem);
+                            });
+                        } else {
+                            balancesList.innerHTML = '<div class="text-red-400 text-center py-4">Error loading balances</div>';
+                            showNotification(result.detail || 'Error loading balances', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        balancesList.innerHTML = '<div class="text-red-400 text-center py-4">Error loading balances</div>';
+                        showNotification('Error loading balances', 'error');
+                    }
+                }
+            });
+        }
+
+        // Trading Profile Modal
+        if (updateTradingProfileBtn) {
+            updateTradingProfileBtn.addEventListener('click', () => {
+                tradingProfileModal.classList.remove('hidden');
+            });
+        }
+
+        if (tradingModalBackdrop) {
+            tradingModalBackdrop.addEventListener('click', () => {
+                tradingProfileModal.classList.add('hidden');
+            });
+        }
+
+        if (closeTradingModal) {
+            closeTradingModal.addEventListener('click', () => {
+                tradingProfileModal.classList.add('hidden');
+            });
+        }
+
+        if (cancelTradingBtn) {
+            cancelTradingBtn.addEventListener('click', () => {
+                tradingProfileModal.classList.add('hidden');
+                tradingProfileForm.reset();
+            });
+        }
+
+        if (tradingProfileForm) {
+            tradingProfileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Saving';
+                submitBtn.disabled = true;
+
+                try {
+                    const formData = new FormData(this);
+
+                    const response = await fetch('/api/profile/trading', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification(result.message || 'Trading profile updated successfully', 'success');
+                        tradingProfileModal.classList.add('hidden');
+                        tradingProfileForm.reset();
+                        setTimeout(() => location.reload(), 1500); // Reload to show updated data
+                    } else {
+                        showNotification(result.detail || 'Error updating trading profile', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('Error updating trading profile', 'error');
+                } finally {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+
+        // Form Submissions
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    const originalHTML = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Saving';
+                    submitBtn.disabled = true;
+
+                    try {
+                        let endpoint = '';
+                        const formData = new FormData(this);
+
+                        // Determine endpoint based on form ID
+                        if (this.id === 'personal-form') {
+                            endpoint = '/api/profile/personal';
+                        } else if (this.id === 'password-form') {
+                            endpoint = '/api/profile/password';
+                        } else if (this.id === 'preferences-form') {
+                            endpoint = '/api/profile/preferences';
+                        } else if (this.id === 'notifications-form') {
+                            endpoint = '/api/profile/notifications';
+                        }
+
+                        if (endpoint) {
+                            const response = await fetch(endpoint, {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const result = await response.json();
+
+                            if (response.ok) {
+                                showNotification(result.message || 'Settings saved successfully', 'success');
+
+                                // Hide forms after successful submission
+                                if (this.id === 'personal-form') {
+                                    personalFormActions.classList.add('hidden');
+                                    editPersonalBtn.classList.remove('hidden');
+                                    const inputs = this.querySelectorAll('input, select, textarea');
+                                    inputs.forEach(input => {
+                                        input.readOnly = true;
+                                        input.disabled = true;
+                                        input.classList.remove('bg-gray-800/50');
+                                        input.classList.add('bg-gray-900/50');
+                                    });
+                                } else if (this.id === 'password-form') {
+                                    this.classList.add('hidden');
+                                    this.reset();
+                                }
+                            } else {
+                                showNotification(result.detail || 'Error saving settings', 'error');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showNotification('Error saving settings', 'error');
+                    } finally {
+                        submitBtn.innerHTML = originalHTML;
+                        submitBtn.disabled = false;
+                    }
+                }
+            });
+        });
+        
+        // Toggle Switch Handlers
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                if (this.checked) {
+                    label.style.backgroundColor = '#3b82f6';
+                } else {
+                    label.style.backgroundColor = '#374151';
+                }
+            });
+        });
+        
+        // Theme Buttons
+        document.querySelectorAll('[data-theme]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all theme buttons
+                document.querySelectorAll('[data-theme]').forEach(b => {
+                    b.classList.remove('active');
+                });
+
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const theme = this.getAttribute('data-theme');
+
+                // Apply theme immediately
+                applyTheme(theme);
+
+                // Update hidden input for form submission
+                let themeInput = document.querySelector('input[name="theme"]');
+                if (!themeInput) {
+                    themeInput = document.createElement('input');
+                    themeInput.type = 'hidden';
+                    themeInput.name = 'theme';
+                    this.closest('form').appendChild(themeInput);
+                }
+                themeInput.value = theme;
+
+                showNotification(`Theme changed to ${theme} mode`, 'success');
+            });
+        });
+
+        // Apply theme function
+        function applyTheme(theme) {
+            const body = document.body;
+            if (theme === 'light') {
+                body.classList.add('light-theme');
+            } else {
+                body.classList.remove('light-theme');
+            }
+        }
+
+        // Initialize theme on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = '{{ user.theme or "dark" }}';
+            applyTheme(currentTheme);
+
+            // Set active theme button
+            const activeThemeBtn = document.querySelector(`[data-theme="${currentTheme}"]`);
+            if (activeThemeBtn) {
+                activeThemeBtn.classList.add('active');
+            }
+        });
+        
+        // Notification System
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : type === 'error' ? 'border-red-500' : type === 'warning' ? 'border-yellow-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : type === 'error' ? 'bg-red-500/20' : type === 'warning' ? 'bg-yellow-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : type === 'error' ? 'fa-exclamation text-red-400' : type === 'warning' ? 'fa-exclamation-triangle text-yellow-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click effects to buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Demo notification
+            setTimeout(() => {
+                showNotification('Welcome to your profile settings', 'info');
+            }, 1000);
+        });
+        
+        // Expose functions to global scope
+        window.showNotification = showNotification;
+    </script>
+</body>
+</html>

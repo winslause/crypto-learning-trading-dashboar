@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>API Keys | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+   <style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+    }
+    
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInLeft { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse-subtle { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-in-left { animation: slideInLeft 0.4s ease-out forwards; }
+    .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+
+    /* Glass morphism */
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-dark {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Custom scrollbar */
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(59, 130, 246, 0.5) rgba(255, 255, 255, 0.05); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+
+    /* Gradient text */
+    .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        overflow-x: hidden;
+    }
+
+    /* Trading buttons */
+    .trading-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+    .trading-btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    .trading-btn-primary:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+    .trading-btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .trading-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .badge-info { background: rgba(59, 130, 246, 0.1); fixed-color: #3b82f6; }
+
+    /* Security indicators */
+    .security-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .security-high { background: #10b981; }
+    .security-medium { background: #f59e0b; }
+    .security-low { background: #ef4444; }
+    
+    .api-input { font-family: 'Courier New', monospace; letter-spacing: 0.5px; }
+    
+    /* Warning boxes */
+    .warning-box { border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.05); }
+    .danger-box { border-left: 3px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
+    .success-box { border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.05); }
+    
+    /* Toggle switch */
+    .toggle-switch { position: relative; display: inline-block; width: 48px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .4s; border-radius: 24px; }
+    .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .toggle-slider { background-color: #3b82f6; }
+    input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+    .permission-badge { padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.25rem; margin-bottom: 0.25rem; display: inline-block; }
+
+    @media (max-width: 640px) {
+        .mobile-full { width: 100% !important; }
+        .mobile-hidden { display: none !important; }
+        .mobile-stack { flex-direction: column !important; }
+        .mobile-text-center { text-align: center !important; }
+    }
+
+    .loading-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.8); display: flex; align-items: center; justify-content: center;
+        z-index: 20; border-radius: 0.75rem;
+    }
+
+    @keyframes copySuccess {
+        0% { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        50% { background: linear-gradient(135deg, #10b981, #059669); }
+        100% { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    }
+    .copy-success { animation: copySuccess 1s ease; }
+
+    /* ────────────────────────────────
+       FINAL FIXES
+       ──────────────────────────────── */
+
+    /* Fixed top navbar - never overlaps content */
+    nav.glass {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 50;
+    }
+
+    /* Main content starts below navbar */
+    main {
+        padding-top: 140px !important;
+    }
+    @media (min-width: 1024px) {
+        main { padding-top: 100px !important; }
+    }
+
+    /* Mobile sidebar */
+    #mobile-sidebar {
+        z-index: 60 !important;
+    }
+
+    /* Hide the X close button completely (as requested) */
+    #close-sidebar {
+        display: none !important;
+    }
+
+    /* Fixed header in mobile sidebar */
+    #mobile-sidebar .border-b.border-gray-800 {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 90px;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem;
+        justify-content: space-between;
+    }
+
+    #mobile-sidebar .glass-dark {
+        padding-top: 110px !important;
+        position: relative;
+    }
+    #mobile-sidebar .p-6 { padding: 0 !important; }
+
+    @media (max-width: 1024px) {
+        #mobile-sidebar .glass-dark { padding-top: 120px !important; }
+    }
+
+    /* ────── FIX: Action buttons (especially Delete) no longer overflow ────── */
+    .bg-gray-900\/30 {
+        overflow: hidden; /* Prevent any child overflow */
+    }
+
+    /* Action buttons container - responsive & always fits */
+    .bg-gray-900\/30 .flex.space-x-2 {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 640px) {
+        .bg-gray-900\/30 .flex.space-x-2 {
+            justify-content: center;
+            width: 100%;
+        }
+        .bg-gray-900\/30 .trading-btn {
+            flex: 1;
+            min-width: 80px;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+
+    /* Ensure the bottom border section takes full width */
+    .bg-gray-900\/30 > div:last-child {
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    @media (min-width: 640px) {
+        .bg-gray-900\/30 > div:last-child {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+
+    /* ───────────────────────────────────── */
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 py-3 px-4 md:px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Menu -->
+            <div class="flex items-center space-x-4">
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="dashboard.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text hidden sm:inline">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-6 ml-6">
+                    <a href="dashboard.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="balances.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-wallet mr-2"></i> Balances
+                    </a>
+                    <a href="coins.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-coins mr-2"></i> Markets
+                    </a>
+                    <a href="futures_chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-candlestick mr-2"></i> Futures
+                    </a>
+                    <a href="chart.html" class="text-gray-300 hover:text-white transition-colors flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Charts
+                    </a>
+                    <a href="api_keys.html" class="text-blue-400 font-semibold flex items-center">
+                        <i class="fas fa-key mr-2"></i> API Keys
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right: User & Settings -->
+            <div class="flex items-center space-x-3">
+                <!-- User Profile -->
+                <div class="relative">
+                    <a href="profile.html" class="flex items-center space-x-3 glass rounded-xl px-3 py-2 hover:bg-gray-800/50 transition-colors">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                            <span class="font-bold">DT</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="font-medium text-sm">Demo Trader</div>
+                            <div class="text-xs text-gray-400">Professional</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Title -->
+        <div class="mt-3 lg:hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-bold text-lg">API Keys</div>
+                    <div class="text-sm text-gray-400">Secure API Management</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Menu -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-40 lg:hidden hidden">
+        <div class="absolute inset-0 bg-black/50" id="sidebar-backdrop"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-dark border-r border-gray-800 transform -translate-x-full transition-transform duration-300" id="sidebar-content">
+            <div class="p-6 border-b border-gray-800">
+                <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button><br>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">CryptoFutures<span class="text-blue-400">Pro</span></span>
+                    </div>
+                    <!-- <button id="close-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button> -->
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="balances.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span>Balances</span>
+                    </a>
+                    <a href="coins.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-coins w-5"></i>
+                        <span>Markets</span>
+                    </a>
+                    <a href="futures_chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-candlestick w-5"></i>
+                        <span>Futures</span>
+                    </a>
+                    <a href="chart.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Charts</span>
+                    </a>
+                    <a href="api_keys.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-key w-5"></i>
+                        <span>API Keys</span>
+                    </a>
+                    <div class="pt-4 border-t border-gray-800 mt-4">
+                        <a href="profile.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-user w-5"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="settings.html" class="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800/50 transition-colors">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>Settings</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="pt-24 pb-16 px-4 md:px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-8 animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-2">API Keys Management</h1>
+                        <div class="flex items-center space-x-4 text-gray-400">
+                            <div class="flex items-center">
+                                <span class="security-indicator security-high"></span>
+                                <span class="text-sm">Secure Storage</span>
+                            </div>
+                            <span class="hidden md:inline">•</span>
+                            <div class="text-sm">Keys encrypted at rest</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                        <a href="https://www.binance.com/en/support/faq/how-to-create-api-360002502072" target="_blank" class="trading-btn trading-btn-secondary">
+                            <i class="fas fa-question-circle mr-2"></i> Guide
+                        </a>
+                        <button id="add-new-key" class="trading-btn trading-btn-primary">
+                            <i class="fas fa-plus mr-2"></i> Add New Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Warning -->
+            <div class="glass rounded-2xl p-6 mb-8 danger-box animate-slide-in-left">
+                <div class="flex items-start">
+                    <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-shield-alt text-red-400 text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold mb-2">Security Warning</h3>
+                        <div class="text-gray-300 space-y-2">
+                            <p>• Never share your API keys with anyone. CryptoFutures Pro staff will never ask for your keys.</p>
+                            <p>• Only enable necessary permissions (read-only for trading bots).</p>
+                            <p>• Use IP whitelisting if available on your exchange.</p>
+                            <p>• Regularly rotate your API keys for enhanced security.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: API Key Form & Info -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Current API Keys -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-left">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold">Your API Keys</h2>
+                            <span class="badge badge-info">2 Active</span>
+                        </div>
+                        
+                        <!-- No Keys State -->
+                        <div id="no-keys-state" class="text-center py-12 hidden">
+                            <div class="w-20 h-20 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-key text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3">No API Keys Found</h3>
+                            <p class="text-gray-400 mb-6 max-w-md mx-auto">
+                                Add your first API key to connect your exchange account and start trading.
+                            </p>
+                            <button id="add-first-key" class="trading-btn trading-btn-primary">
+                                <i class="fas fa-plus mr-2"></i> Add Your First API Key
+                            </button>
+                        </div>
+                        
+                        <!-- API Keys List -->
+                        <div id="keys-list" class="space-y-4">
+                            <!-- Key 1: Binance -->
+                            <div class="bg-gray-900/30 rounded-xl p-5 border border-gray-800">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl flex items-center justify-center">
+                                            <i class="fab fa-btc text-yellow-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">Binance API Key</div>
+                                            <div class="text-sm text-gray-400">Added 15 days ago</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="badge badge-success">Connected</span>
+                                        <span class="badge badge-warning">Read Only</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Key Display -->
+                                <div class="mb-4">
+                                    <div class="text-sm text-gray-400 mb-2">API Key</div>
+                                    <div class="flex items-center">
+                                        <div class="api-input bg-gray-900/50 border border-gray-700 text-gray-300 rounded-lg py-2 px-4 flex-1 overflow-x-auto custom-scrollbar">
+                                            xpD9sK8mN4bV7cX2zQ5wE6rT3yU1iO0pL9...
+                                        </div>
+                                        <button class="copy-key-btn ml-3 trading-btn trading-btn-secondary" data-key="xpD9sK8mN4bV7cX2zQ5wE6rT3yU1iO0pL9...">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Permissions -->
+                                <div class="mb-4">
+                                    <div class="text-sm text-gray-400 mb-2">Permissions</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="permission-badge bg-blue-500/20 text-blue-400">Read</span>
+                                        <span class="permission-badge bg-green-500/20 text-green-400">Trade</span>
+                                        <span class="permission-badge bg-gray-500/20 text-gray-400">Margin</span>
+                                        <span class="permission-badge bg-purple-500/20 text-purple-400">Futures</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-800">
+                                    <div class="mb-3 sm:mb-0">
+                                        <div class="flex items-center">
+                                            <span class="security-indicator security-high"></span>
+                                            <span class="text-sm text-gray-400">Security: High</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="test-connection-btn trading-btn trading-btn-secondary text-sm">
+                                            <i class="fas fa-bolt mr-1"></i> Test
+                                        </button>
+                                        <button class="edit-key-btn trading-btn trading-btn-secondary text-sm">
+                                            <i class="fas fa-edit mr-1"></i> Edit
+                                        </button>
+                                        <button class="delete-key-btn trading-btn trading-btn-secondary text-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                            <i class="fas fa-trash mr-1"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key 2: Test Key -->
+                            <div class="bg-gray-900/30 rounded-xl p-5 border border-gray-800">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-vial text-blue-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">Test API Key</div>
+                                            <div class="text-sm text-gray-400">Added 2 days ago</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="badge badge-danger">Expired</span>
+                                        <span class="badge badge-info">Read Only</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Key Display -->
+                                <div class="mb-4">
+                                    <div class="text-sm text-gray-400 mb-2">API Key</div>
+                                    <div class="flex items-center">
+                                        <div class="api-input bg-gray-900/50 border border-gray-700 text-gray-300 rounded-lg py-2 px-4 flex-1 overflow-x-auto custom-scrollbar">
+                                            t3sTk3Y8mN4bV7cX2zQ5wE6rT3yU1i...
+                                        </div>
+                                        <button class="copy-key-btn ml-3 trading-btn trading-btn-secondary" data-key="t3sTk3Y8mN4bV7cX2zQ5wE6rT3yU1i...">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Permissions -->
+                                <div class="mb-4">
+                                    <div class="text-sm text-gray-400 mb-2">Permissions</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="permission-badge bg-blue-500/20 text-blue-400">Read</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-800">
+                                    <div class="mb-3 sm:mb-0">
+                                        <div class="flex items-center">
+                                            <span class="security-indicator security-low"></span>
+                                            <span class="text-sm text-gray-400">Security: Low</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="renew-key-btn trading-btn trading-btn-secondary text-sm">
+                                            <i class="fas fa-redo mr-1"></i> Renew
+                                        </button>
+                                        <button class="delete-key-btn trading-btn trading-btn-secondary text-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                            <i class="fas fa-trash mr-1"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- API Key Form -->
+                    <div id="api-key-form" class="glass rounded-2xl p-6 animate-slide-in-left hidden">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold">Add New API Key</h2>
+                            <button id="cancel-form" class="text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="key-form" class="space-y-6">
+                            <!-- Exchange Selection -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-3">Exchange</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div class="exchange-option">
+                                        <input type="radio" name="exchange" id="binance" value="binance" class="hidden" checked>
+                                        <label for="binance" class="flex flex-col items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl flex items-center justify-center mb-3">
+                                                <i class="fab fa-btc text-yellow-400 text-xl"></i>
+                                            </div>
+                                            <span class="font-medium">Binance</span>
+                                            <span class="text-xs text-gray-400 mt-1">Recommended</span>
+                                        </label>
+                                    </div>
+                                    <div class="exchange-option">
+                                        <input type="radio" name="exchange" id="kucoin" value="kucoin" class="hidden">
+                                        <label for="kucoin" class="flex flex-col items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-3">
+                                                <i class="fas fa-exchange-alt text-blue-400 text-xl"></i>
+                                            </div>
+                                            <span class="font-medium">KuCoin</span>
+                                        </label>
+                                    </div>
+                                    <div class="exchange-option">
+                                        <input type="radio" name="exchange" id="bybit" value="bybit" class="hidden">
+                                        <label for="bybit" class="flex flex-col items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl flex items-center justify-center mb-3">
+                                                <i class="fas fa-chart-line text-green-400 text-xl"></i>
+                                            </div>
+                                            <span class="font-medium">Bybit</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- API Key Input -->
+                            <div>
+                                <label for="api-key" class="block text-sm font-medium text-gray-400 mb-2">API Key</label>
+                                <div class="relative">
+                                    <input type="text" id="api-key" name="api-key" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 api-input focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Enter your API key" required>
+                                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <button type="button" id="toggle-api-key" class="text-gray-400 hover:text-white">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2">Found in your exchange account settings</div>
+                            </div>
+                            
+                            <!-- Secret Key Input -->
+                            <div>
+                                <label for="secret-key" class="block text-sm font-medium text-gray-400 mb-2">Secret Key</label>
+                                <div class="relative">
+                                    <input type="password" id="secret-key" name="secret-key" class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 api-input focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Enter your secret key" required>
+                                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <button type="button" id="toggle-secret-key" class="text-gray-400 hover:text-white">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2">Keep this secret! Never share with anyone.</div>
+                            </div>
+                            
+                            <!-- Permissions -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-3">Permissions</label>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-gray-900/30 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">Read-Only</div>
+                                            <div class="text-sm text-gray-400">View balances and market data</div>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked disabled>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-900/30 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">Enable Trading</div>
+                                            <div class="text-sm text-gray-400">Place and manage orders</div>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="enable-trading" id="enable-trading">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-900/30 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">Enable Withdrawals</div>
+                                            <div class="text-sm text-gray-400 warning-box p-2 mt-2">
+                                                <i class="fas fa-exclamation-triangle text-yellow-400 mr-1"></i>
+                                                High risk! Only enable if absolutely necessary.
+                                            </div>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="enable-withdrawals" id="enable-withdrawals">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Security Options -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-3">Security Options</label>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-gray-900/30 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">Encrypt Keys</div>
+                                            <div class="text-sm text-gray-400">Keys encrypted at rest (Recommended)</div>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked disabled>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-900/30 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">Auto-Rotate Keys</div>
+                                            <div class="text-sm text-gray-400">Automatically renew keys every 90 days</div>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="auto-rotate" id="auto-rotate">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="pt-6 border-t border-gray-800">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+                                    <button type="button" id="test-connection" class="trading-btn trading-btn-secondary">
+                                        <i class="fas fa-bolt mr-2"></i> Test Connection
+                                    </button>
+                                    <div class="flex space-x-3">
+                                        <button type="button" id="cancel-btn" class="trading-btn trading-btn-secondary">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="trading-btn trading-btn-primary">
+                                            <i class="fas fa-save mr-2"></i> Save API Key
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Security Guide & Tips -->
+                <div class="space-y-8">
+                    <!-- Security Checklist -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-right">
+                        <h3 class="text-lg font-bold mb-6">Security Checklist</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-check text-green-400 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Use Read-Only Keys</div>
+                                    <div class="text-sm text-gray-400">For trading bots, use read-only permissions</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-check text-green-400 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">IP Whitelisting</div>
+                                    <div class="text-sm text-gray-400">Restrict API access to specific IP addresses</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-exclamation text-yellow-400 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Regular Rotation</div>
+                                    <div class="text-sm text-gray-400">Change API keys every 90 days</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-times text-red-400 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Never Share Keys</div>
+                                    <div class="text-sm text-gray-400">Legitimate services never ask for your secret key</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- How to Guide -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-right" style="animation-delay: 0.1s">
+                        <h3 class="text-lg font-bold mb-6">How to Create API Keys</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-blue-400 font-bold">1</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Log into your exchange</div>
+                                    <div class="text-sm text-gray-400">Go to API Management section</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-blue-400 font-bold">2</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Create new API key</div>
+                                    <div class="text-sm text-gray-400">Select appropriate permissions</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-blue-400 font-bold">3</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Copy keys</div>
+                                    <div class="text-sm text-gray-400">Save API Key and Secret Key securely</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-blue-400 font-bold">4</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Enter here</div>
+                                    <div class="text-sm text-gray-400">Paste keys and configure permissions</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Tips -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-right" style="animation-delay: 0.2s">
+                        <h3 class="text-lg font-bold mb-6">Quick Tips</h3>
+                        <div class="space-y-3">
+                            <div class="success-box p-3 rounded-lg">
+                                <div class="text-sm text-gray-300">
+                                    <i class="fas fa-lightbulb text-green-400 mr-2"></i>
+                                    Use separate keys for different trading strategies
+                                </div>
+                            </div>
+                            <div class="warning-box p-3 rounded-lg">
+                                <div class="text-sm text-gray-300">
+                                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                                    Never enable withdrawal permissions for trading bots
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-900/30">
+                                <div class="text-sm text-gray-300">
+                                    <i class="fas fa-history text-blue-400 mr-2"></i>
+                                    Monitor API usage regularly for suspicious activity
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Connection Status -->
+                    <div class="glass rounded-2xl p-6 animate-slide-in-right" style="animation-delay: 0.3s">
+                        <h3 class="text-lg font-bold mb-6">Connection Status</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="security-indicator security-high"></span>
+                                    <span>Binance</span>
+                                </div>
+                                <span class="text-green-400 text-sm font-medium">Connected</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="security-indicator security-low"></span>
+                                    <span>Test Key</span>
+                                </div>
+                                <span class="text-red-400 text-sm font-medium">Expired</span>
+                            </div>
+                            <div class="pt-4 border-t border-gray-800">
+                                <div class="text-sm text-gray-400 mb-2">Last Checked</div>
+                                <div class="font-mono">2024-01-15 14:30:22 UTC</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Mobile Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 glass border-t border-gray-800 z-40 lg:hidden">
+        <div class="flex justify-around p-3">
+            <a href="dashboard.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="balances.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-wallet text-lg mb-1"></i>
+                <span class="text-xs">Balance</span>
+            </a>
+            <a href="coins.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-coins text-lg mb-1"></i>
+                <span class="text-xs">Markets</span>
+            </a>
+            <a href="futures_chart.html" class="flex flex-col items-center text-gray-300">
+                <i class="fas fa-chart-candlestick text-lg mb-1"></i>
+                <span class="text-xs">Futures</span>
+            </a>
+            <a href="api_keys.html" class="flex flex-col items-center text-blue-400">
+                <i class="fas fa-key text-lg mb-1"></i>
+                <span class="text-xs">API</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuBottom = document.getElementById('mobile-menu-bottom');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const sidebarContent = document.getElementById('sidebar-content');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const addNewKeyBtn = document.getElementById('add-new-key');
+        const addFirstKeyBtn = document.getElementById('add-first-key');
+        const cancelFormBtn = document.getElementById('cancel-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const apiKeyForm = document.getElementById('api-key-form');
+        const noKeysState = document.getElementById('no-keys-state');
+        const keysList = document.getElementById('keys-list');
+        const keyForm = document.getElementById('key-form');
+        const testConnectionBtn = document.getElementById('test-connection');
+        const toggleApiKeyBtn = document.getElementById('toggle-api-key');
+        const toggleSecretKeyBtn = document.getElementById('toggle-secret-key');
+        const apiKeyInput = document.getElementById('api-key');
+        const secretKeyInput = document.getElementById('secret-key');
+        const copyKeyBtns = document.querySelectorAll('.copy-key-btn');
+        const deleteKeyBtns = document.querySelectorAll('.delete-key-btn');
+        const testConnectionBtns = document.querySelectorAll('.test-connection-btn');
+        const editKeyBtns = document.querySelectorAll('.edit-key-btn');
+        const renewKeyBtn = document.querySelector('.renew-key-btn');
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('hidden');
+            sidebarContent.classList.toggle('-translate-x-full');
+        }
+        
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', toggleMobileMenu);
+        }
+        
+        // Show/Hide API Key Form
+        function showApiKeyForm() {
+            apiKeyForm.classList.remove('hidden');
+            apiKeyForm.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideApiKeyForm() {
+            apiKeyForm.classList.add('hidden');
+            keyForm.reset();
+        }
+        
+        if (addNewKeyBtn) {
+            addNewKeyBtn.addEventListener('click', showApiKeyForm);
+        }
+        
+        if (addFirstKeyBtn) {
+            addFirstKeyBtn.addEventListener('click', showApiKeyForm);
+        }
+        
+        if (cancelFormBtn) {
+            cancelFormBtn.addEventListener('click', hideApiKeyForm);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', hideApiKeyForm);
+        }
+        
+        // Toggle API Key Visibility
+        if (toggleApiKeyBtn) {
+            toggleApiKeyBtn.addEventListener('click', function() {
+                const type = apiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                apiKeyInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        if (toggleSecretKeyBtn) {
+            toggleSecretKeyBtn.addEventListener('click', function() {
+                const type = secretKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                secretKeyInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        // Copy API Key
+        copyKeyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const key = this.getAttribute('data-key');
+                navigator.clipboard.writeText(key).then(() => {
+                    // Visual feedback
+                    this.classList.add('copy-success');
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    this.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    
+                    setTimeout(() => {
+                        this.classList.remove('copy-success');
+                        this.innerHTML = originalHTML;
+                        this.style.background = '';
+                    }, 2000);
+                    
+                    showNotification('API key copied to clipboard', 'success');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showNotification('Failed to copy to clipboard', 'error');
+                });
+            });
+        });
+        
+        // Test Connection
+        if (testConnectionBtn) {
+            testConnectionBtn.addEventListener('click', function() {
+                this.classList.add('animate-spin');
+                this.disabled = true;
+                
+                // Simulate API test
+                setTimeout(() => {
+                    this.classList.remove('animate-spin');
+                    this.disabled = false;
+                    showNotification('Connection test successful! API keys are valid.', 'success');
+                }, 1500);
+            });
+        }
+        
+        // Test Connection for existing keys
+        testConnectionBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> Testing';
+                this.disabled = true;
+                
+                // Simulate API test
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                    showNotification('Connection test successful!', 'success');
+                }, 1500);
+            });
+        });
+        
+        // Delete API Key
+        deleteKeyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const keyCard = this.closest('.bg-gray-900\\/30');
+                const keyName = keyCard.querySelector('.font-bold').textContent;
+                
+                // Show confirmation
+                if (confirm(`Are you sure you want to delete the "${keyName}" API key? This action cannot be undone.`)) {
+                    // Simulate deletion
+                    keyCard.style.opacity = '0.5';
+                    keyCard.style.pointerEvents = 'none';
+                    
+                    setTimeout(() => {
+                        keyCard.remove();
+                        showNotification('API key deleted successfully', 'success');
+                        
+                        // Check if no keys left
+                        if (document.querySelectorAll('.bg-gray-900\\/30').length === 0) {
+                            keysList.classList.add('hidden');
+                            noKeysState.classList.remove('hidden');
+                        }
+                    }, 1000);
+                }
+            });
+        });
+        
+        // Edit API Key
+        editKeyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                showApiKeyForm();
+                showNotification('Edit mode activated. Fill in the new key details.', 'info');
+            });
+        });
+        
+        // Renew Key
+        if (renewKeyBtn) {
+            renewKeyBtn.addEventListener('click', function() {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> Renewing';
+                this.disabled = true;
+                
+                // Simulate renewal
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                    
+                    // Update the key status
+                    const keyCard = this.closest('.bg-gray-900\\/30');
+                    const badge = keyCard.querySelector('.badge-danger');
+                    if (badge) {
+                        badge.classList.remove('badge-danger');
+                        badge.classList.add('badge-success');
+                        badge.textContent = 'Connected';
+                    }
+                    
+                    // Update security indicator
+                    const securityIndicator = keyCard.querySelector('.security-indicator');
+                    if (securityIndicator) {
+                        securityIndicator.classList.remove('security-low');
+                        securityIndicator.classList.add('security-high');
+                        securityIndicator.nextElementSibling.textContent = 'Security: High';
+                    }
+                    
+                    showNotification('API key renewed successfully', 'success');
+                }, 2000);
+            });
+        }
+        
+        // Form Submission
+        if (keyForm) {
+            keyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Saving';
+                submitBtn.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled = false;
+                    
+                    // Hide form
+                    hideApiKeyForm();
+                    
+                    // Show success message
+                    showNotification('API key saved successfully and encrypted', 'success');
+                    
+                    // Hide "no keys" state if shown
+                    if (!noKeysState.classList.contains('hidden')) {
+                        noKeysState.classList.add('hidden');
+                        keysList.classList.remove('hidden');
+                    }
+                    
+                    // In a real app, you would add the new key to the list
+                }, 2000);
+            });
+        }
+        
+        // Exchange selection
+        document.querySelectorAll('.exchange-option').forEach(option => {
+            const label = option.querySelector('label');
+            const input = option.querySelector('input');
+            
+            label.addEventListener('click', function() {
+                // Remove active class from all options
+                document.querySelectorAll('.exchange-option label').forEach(l => {
+                    l.classList.remove('border-blue-500');
+                });
+                
+                // Add active class to selected option
+                this.classList.add('border-blue-500');
+            });
+            
+            // Initialize first option as active
+            if (input.checked) {
+                label.classList.add('border-blue-500');
+            }
+        });
+        
+        // Permission toggle warnings
+        document.getElementById('enable-withdrawals')?.addEventListener('change', function() {
+            if (this.checked) {
+                if (!confirm('⚠️ WARNING: Enabling withdrawal permissions is extremely dangerous!\n\nWithdrawal permissions allow complete access to your funds. Only enable this if you absolutely need it and understand the risks.')) {
+                    this.checked = false;
+                }
+            }
+        });
+        
+        // Check if no keys exist (for demo)
+        function checkNoKeysState() {
+            // In a real app, you would check from API
+            // For demo, we'll show both states
+            const hasKeys = document.querySelectorAll('.bg-gray-900\\/30').length > 0;
+            
+            if (!hasKeys) {
+                keysList.classList.add('hidden');
+                noKeysState.classList.remove('hidden');
+            }
+        }
+        
+        // Notification System
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 glass-dark rounded-xl p-4 border-l-4 ${type === 'success' ? 'border-green-500' : type === 'error' ? 'border-red-500' : 'border-blue-500'} transform translate-x-full transition-transform duration-300 z-50 max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 ${type === 'success' ? 'bg-green-500/20' : type === 'error' ? 'bg-red-500/20' : 'bg-blue-500/20'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas ${type === 'success' ? 'fa-check text-green-400' : type === 'error' ? 'fa-exclamation text-red-400' : 'fa-info text-blue-400'}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info'}</div>
+                        <div class="text-sm text-gray-300 mt-1">${message}</div>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkNoKeysState();
+            
+            // Add click effects to buttons
+            document.querySelectorAll('.trading-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Demo notification
+            setTimeout(() => {
+                showNotification('API keys are encrypted and stored securely', 'info');
+            }, 1000);
+        });
+        
+        // Expose functions to global scope
+        window.showNotification = showNotification;
+    </script>
+</body>
+</html>

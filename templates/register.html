@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Register | CryptoFutures Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Password Strength Meter -->
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes checkmark {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-pulse-subtle {
+            animation: pulse-subtle 3s ease-in-out infinite;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+        
+        .animate-checkmark {
+            animation: checkmark 0.3s ease-out forwards;
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.8);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Input focus effects */
+        .input-focus:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        /* Password strength meter */
+        .strength-meter {
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-0 { width: 0%; background: #ef4444; }
+        .strength-1 { width: 25%; background: #ef4444; }
+        .strength-2 { width: 50%; background: #f59e0b; }
+        .strength-3 { width: 75%; background: #3b82f6; }
+        .strength-4 { width: 100%; background: #10b981; }
+        
+        /* Checkbox styling */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox.checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .custom-checkbox.checked i {
+            display: block;
+        }
+        
+        /* Responsive adjustments for foldable devices */
+        @media (max-width: 540px) and (max-height: 720px) {
+            .foldable-optimized {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+            
+            .foldable-text {
+                font-size: 0.9rem !important;
+            }
+            
+            .foldable-input {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+        }
+        
+        /* Toggle password visibility */
+        .password-toggle {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
+            color: #3b82f6;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Dark mode by default */
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        /* Step indicator */
+        .step-indicator {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .step-indicator.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .step-indicator.completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step-indicator.inactive {
+            background: #374151;
+            color: #9ca3af;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            height: 3px;
+            background: #374151;
+            flex: 1;
+            margin: 0 8px;
+            border-radius: 1.5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+            border-radius: 1.5px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 flex items-center justify-center p-4">
+    
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse-subtle"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-full blur-3xl animate-pulse-subtle" style="animation-delay: 1s"></div>
+        <div class="absolute top-3/4 left-1/3 w-40 h-40 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-full blur-3xl animate-pulse-subtle" style="animation-delay: 2s"></div>
+        
+        <!-- Floating crypto icons -->
+        <div class="absolute top-10 left-10 w-12 h-12 glass rounded-full flex items-center justify-center animate-float">
+            <i class="fab fa-bitcoin text-yellow-500 text-xl"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 w-12 h-12 glass rounded-full flex items-center justify-center animate-float" style="animation-delay: 1s">
+            <i class="fab fa-ethereum text-purple-500 text-xl"></i>
+        </div>
+        <div class="absolute top-1/2 right-20 w-10 h-10 glass rounded-full flex items-center justify-center animate-float" style="animation-delay: 2s">
+            <i class="fas fa-user-plus text-blue-500"></i>
+        </div>
+    </div>
+    
+    <!-- Main Registration Container -->
+    <div class="relative w-full max-w-4xl z-10 animate-slide-up">
+        <!-- Back to Home/Login Button -->
+        <div class="absolute -top-16 left-0 flex space-x-4">
+            <a href="/" class="text-gray-400 hover:text-white transition-colors flex items-center group">
+                <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                Back to Home
+            </a>
+            <span class="text-gray-600">|</span>
+            <a href="/login" class="text-gray-400 hover:text-white transition-colors flex items-center group">
+                <i class="fas fa-sign-in-alt mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                Already have an account?
+            </a>
+        </div>
+        
+        <!-- Registration Card -->
+        <div class="glass-dark rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
+            <!-- Card Header with Gradient -->
+            <div class="bg-gradient-to-r from-blue-900/30 via-purple-900/30 to-green-900/30 p-8 text-center">
+                <div class="flex justify-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-green-600 rounded-2xl flex items-center justify-center animate-pulse-subtle">
+                        <i class="fas fa-user-plus text-white text-2xl"></i>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold mb-2">Create Your Account</h1>
+                <p class="text-gray-300">Join thousands of professional traders on CryptoFuturesPro</p>
+            </div>
+            
+            <!-- Multi-step Registration Form -->
+            <div class="p-6 md:p-8">
+                <!-- Step Indicator -->
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center flex-1">
+                        <div class="step-indicator completed" id="step1Indicator">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="progress-bar ml-4">
+                            <div class="progress-fill" id="step1Progress" style="width: 100%"></div>
+                        </div>
+                        <div class="step-indicator active ml-4" id="step2Indicator">2</div>
+                        <div class="progress-bar ml-4">
+                            <div class="progress-fill" id="step2Progress" style="width: 0%"></div>
+                        </div>
+                        <div class="step-indicator inactive ml-4" id="step3Indicator">3</div>
+                    </div>
+                </div>
+                
+                <!-- Step Labels -->
+                <div class="flex justify-between mb-2 text-sm text-gray-500">
+                    <div class="w-1/3 text-center">Account Details</div>
+                    <div class="w-1/3 text-center">Security</div>
+                    <div class="w-1/3 text-center">Preferences</div>
+                </div>
+                
+                <!-- Step 1: Account Details -->
+                <div id="step1" class="space-y-6">
+                    <h3 class="text-xl font-bold mb-4 text-blue-400">Step 1: Account Details</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Username -->
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-400"></i>Username *
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="username" 
+                                    name="username"
+                                    required
+                                    placeholder="trader_pro"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pl-12 input-focus transition-all duration-200 foldable-input"
+                                    autocomplete="username"
+                                >
+                                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-at"></i>
+                                </div>
+                                <div id="usernameCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">3-20 characters, letters and numbers only</div>
+                            <div id="usernameError" class="text-xs text-red-400 mt-1 hidden"></div>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-envelope mr-2 text-blue-400"></i>Email Address *
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    name="email"
+                                    required
+                                    placeholder="trader@example.com"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pl-12 input-focus transition-all duration-200 foldable-input"
+                                    autocomplete="email"
+                                >
+                                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div id="emailCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">We'll send a verification email</div>
+                            <div id="emailError" class="text-xs text-red-400 mt-1 hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Full Name -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- First Name -->
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-user-circle mr-2 text-blue-400"></i>First Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName"
+                                placeholder="John"
+                                class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 input-focus transition-all duration-200 foldable-input"
+                            >
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-user-circle mr-2 text-blue-400"></i>Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName"
+                                placeholder="Doe"
+                                class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 input-focus transition-all duration-200 foldable-input"
+                            >
+                        </div>
+                    </div>
+                    
+                    <!-- Country & Phone -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Country -->
+                        <div>
+                            <label for="country" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-globe mr-2 text-blue-400"></i>Country
+                            </label>
+                            <div class="relative">
+                                <select 
+                                    id="country" 
+                                    name="country"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pr-10 input-focus transition-all duration-200 foldable-input appearance-none"
+                                >
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="SG">Singapore</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="CH">Switzerland</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Phone (Optional) -->
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-phone mr-2 text-blue-400"></i>Phone Number (Optional)
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="tel" 
+                                    id="phone" 
+                                    name="phone"
+                                    placeholder="+1 (555) 123-4567"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pl-12 input-focus transition-all duration-200 foldable-input"
+                                >
+                                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Security -->
+                <div id="step2" class="space-y-6 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-green-400">Step 2: Security Settings</h3>
+                    
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-lock mr-2 text-green-400"></i>Create Password *
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password"
+                                required
+                                placeholder="••••••••"
+                                class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pl-12 pr-12 input-focus transition-all duration-200 foldable-input"
+                                autocomplete="new-password"
+                            >
+                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 password-toggle" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Password Strength Meter -->
+                        <div class="mt-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Password Strength</span>
+                                <span id="strengthText">Weak</span>
+                            </div>
+                            <div class="strength-meter strength-0" id="strengthMeter"></div>
+                        </div>
+                        
+                        <!-- Password Requirements -->
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-center">
+                                <div class="custom-checkbox mr-3" id="lengthCheck">
+                                    <i class="fas fa-check text-white text-xs hidden"></i>
+                                </div>
+                                <span class="text-sm text-gray-400">At least 8 characters</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="custom-checkbox mr-3" id="uppercaseCheck">
+                                    <i class="fas fa-check text-white text-xs hidden"></i>
+                                </div>
+                                <span class="text-sm text-gray-400">One uppercase letter</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="custom-checkbox mr-3" id="lowercaseCheck">
+                                    <i class="fas fa-check text-white text-xs hidden"></i>
+                                </div>
+                                <span class="text-sm text-gray-400">One lowercase letter</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="custom-checkbox mr-3" id="numberCheck">
+                                    <i class="fas fa-check text-white text-xs hidden"></i>
+                                </div>
+                                <span class="text-sm text-gray-400">One number</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="custom-checkbox mr-3" id="specialCheck">
+                                    <i class="fas fa-check text-white text-xs hidden"></i>
+                                </div>
+                                <span class="text-sm text-gray-400">One special character</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-lock mr-2 text-green-400"></i>Confirm Password *
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="confirmPassword" 
+                                name="confirmPassword"
+                                required
+                                placeholder="••••••••"
+                                class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pl-12 pr-12 input-focus transition-all duration-200 foldable-input"
+                                autocomplete="new-password"
+                            >
+                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 password-toggle" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                        </div>
+                        <div id="passwordMatch" class="text-xs mt-1 hidden">
+                            <i class="fas fa-check-circle text-green-400 mr-1"></i>
+                            <span class="text-green-400">Passwords match</span>
+                        </div>
+                        <div id="passwordMismatch" class="text-xs mt-1 hidden">
+                            <i class="fas fa-times-circle text-red-400 mr-1"></i>
+                            <span class="text-red-400">Passwords do not match</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 2FA Option -->
+                    <div class="mt-6">
+                        <div class="flex items-center justify-between p-4 glass rounded-xl">
+                            <div>
+                                <div class="font-medium text-gray-300">Two-Factor Authentication</div>
+                                <div class="text-sm text-gray-500">Add an extra layer of security to your account</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="enable2fa" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-2">Recommended for enhanced account security</div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Preferences -->
+                <div id="step3" class="space-y-6 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">Step 3: Trading Preferences</h3>
+                    
+                    <!-- Trading Experience -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-3">
+                            <i class="fas fa-chart-line mr-2 text-purple-400"></i>Trading Experience Level
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="relative">
+                                <input type="radio" name="experience" value="beginner" class="sr-only peer">
+                                <div class="glass p-4 rounded-xl text-center cursor-pointer transition-all duration-200 peer-checked:ring-2 peer-checked:ring-purple-500 peer-checked:bg-purple-900/20 hover:bg-gray-800/50">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-seedling text-blue-400"></i>
+                                    </div>
+                                    <div class="font-medium">Beginner</div>
+                                    <div class="text-xs text-gray-500 mt-1">New to trading</div>
+                                </div>
+                            </label>
+                            
+                            <label class="relative">
+                                <input type="radio" name="experience" value="intermediate" class="sr-only peer" checked>
+                                <div class="glass p-4 rounded-xl text-center cursor-pointer transition-all duration-200 peer-checked:ring-2 peer-checked:ring-purple-500 peer-checked:bg-purple-900/20 hover:bg-gray-800/50">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-chart-bar text-green-400"></i>
+                                    </div>
+                                    <div class="font-medium">Intermediate</div>
+                                    <div class="text-xs text-gray-500 mt-1">Some experience</div>
+                                </div>
+                            </label>
+                            
+                            <label class="relative">
+                                <input type="radio" name="experience" value="advanced" class="sr-only peer">
+                                <div class="glass p-4 rounded-xl text-center cursor-pointer transition-all duration-200 peer-checked:ring-2 peer-checked:ring-purple-500 peer-checked:bg-purple-900/20 hover:bg-gray-800/50">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-rocket text-purple-400"></i>
+                                    </div>
+                                    <div class="font-medium">Advanced</div>
+                                    <div class="text-xs text-gray-500 mt-1">Professional trader</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Preferred Trading Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-3">
+                            <i class="fas fa-exchange-alt mr-2 text-purple-400"></i>Preferred Trading Type
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative">
+                                <input type="checkbox" name="tradingType" value="spot" class="sr-only peer" checked>
+                                <div class="glass p-4 rounded-xl cursor-pointer transition-all duration-200 peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:bg-blue-900/20 hover:bg-gray-800/50">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-coins text-blue-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">Spot Trading</div>
+                                            <div class="text-xs text-gray-500">Buy and sell crypto directly</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="relative">
+                                <input type="checkbox" name="tradingType" value="futures" class="sr-only peer" checked>
+                                <div class="glass p-4 rounded-xl cursor-pointer transition-all duration-200 peer-checked:ring-2 peer-checked:ring-green-500 peer-checked:bg-green-900/20 hover:bg-gray-800/50">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-chart-candlestick text-green-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">Futures Trading</div>
+                                            <div class="text-xs text-gray-500">Trade with leverage</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Default Chart Settings -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Default Timeframe -->
+                        <div>
+                            <label for="defaultTimeframe" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-clock mr-2 text-purple-400"></i>Default Chart Timeframe
+                            </label>
+                            <div class="relative">
+                                <select 
+                                    id="defaultTimeframe" 
+                                    name="defaultTimeframe"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pr-10 input-focus transition-all duration-200 foldable-input appearance-none"
+                                >
+                                    <option value="1h">1 Hour</option>
+                                    <option value="4h" selected>4 Hours</option>
+                                    <option value="1d">1 Day</option>
+                                    <option value="1w">1 Week</option>
+                                    <option value="1m">1 Month</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme Preference -->
+                        <div>
+                            <label for="theme" class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-palette mr-2 text-purple-400"></i>Theme Preference
+                            </label>
+                            <div class="relative">
+                                <select 
+                                    id="theme" 
+                                    name="theme"
+                                    class="w-full bg-gray-900/50 border border-gray-700 text-white rounded-xl py-4 px-4 pr-10 input-focus transition-all duration-200 foldable-input appearance-none"
+                                >
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Mode</option>
+                                    <option value="auto">Auto (System)</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terms and Conditions -->
+                    <div class="mt-6">
+                        <div class="flex items-start">
+                            <div class="custom-checkbox mr-3 mt-1" id="termsCheckbox">
+                                <i class="fas fa-check text-white text-xs hidden"></i>
+                            </div>
+                            <div class="text-sm text-gray-400">
+                                <label for="terms" class="cursor-pointer">
+                                    I agree to the <a href="#" class="text-blue-400 hover:text-blue-300">Terms of Service</a>, 
+                                    <a href="#" class="text-blue-400 hover:text-blue-300">Privacy Policy</a>, and acknowledge that 
+                                    cryptocurrency trading involves substantial risk of loss.
+                                </label>
+                                <div id="termsError" class="text-xs text-red-400 mt-1 hidden">
+                                    You must agree to the terms and conditions
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Marketing Consent -->
+                    <div class="flex items-start">
+                        <div class="custom-checkbox mr-3 mt-1" id="marketingCheckbox">
+                            <i class="fas fa-check text-white text-xs hidden"></i>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            <label for="marketing" class="cursor-pointer">
+                                I would like to receive trading tips, market analysis, and updates from CryptoFuturesPro.
+                                (You can unsubscribe at any time)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-10 pt-6 border-t border-gray-800">
+                    <button 
+                        type="button"
+                        id="prevButton"
+                        class="glass hover:bg-gray-800/50 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center opacity-0 pointer-events-none"
+                        disabled
+                    >
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-500 hidden md:block">
+                            Step <span id="currentStep">1</span> of 3
+                        </div>
+                        
+                        <button 
+                            type="button"
+                            id="nextButton"
+                            class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl flex items-center"
+                        >
+                            Continue
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Badge -->
+            <div class="border-t border-gray-800 p-4 bg-gray-900/30">
+                <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
+                    <i class="fas fa-shield-alt text-green-400"></i>
+                    <span>256-bit SSL encryption • Your data is secure</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Already have an account? -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">
+                Already have an account?
+                <a href="/login" class="text-blue-400 hover:text-blue-300 font-semibold transition-colors ml-1">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Current step tracking
+        let currentStep = 1;
+        const totalSteps = 3;
+        
+        // DOM Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const currentStepSpan = document.getElementById('currentStep');
+        const stepIndicators = {
+            1: document.getElementById('step1Indicator'),
+            2: document.getElementById('step2Indicator'),
+            3: document.getElementById('step3Indicator')
+        };
+        const stepProgress = {
+            1: document.getElementById('step1Progress'),
+            2: document.getElementById('step2Progress')
+        };
+        
+        // Password strength checking
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthMeter = document.getElementById('strengthMeter');
+        const strengthText = document.getElementById('strengthText');
+        
+        // Password requirement checkboxes
+        const lengthCheck = document.getElementById('lengthCheck');
+        const uppercaseCheck = document.getElementById('uppercaseCheck');
+        const lowercaseCheck = document.getElementById('lowercaseCheck');
+        const numberCheck = document.getElementById('numberCheck');
+        const specialCheck = document.getElementById('specialCheck');
+        
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+        
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+        
+        // Check password strength
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            
+            // Check length
+            if (password.length >= 8) {
+                strength++;
+                lengthCheck.classList.add('checked');
+                lengthCheck.querySelector('i').classList.remove('hidden');
+            } else {
+                lengthCheck.classList.remove('checked');
+                lengthCheck.querySelector('i').classList.add('hidden');
+            }
+            
+            // Check uppercase
+            if (/[A-Z]/.test(password)) {
+                strength++;
+                uppercaseCheck.classList.add('checked');
+                uppercaseCheck.querySelector('i').classList.remove('hidden');
+            } else {
+                uppercaseCheck.classList.remove('checked');
+                uppercaseCheck.querySelector('i').classList.add('hidden');
+            }
+            
+            // Check lowercase
+            if (/[a-z]/.test(password)) {
+                strength++;
+                lowercaseCheck.classList.add('checked');
+                lowercaseCheck.querySelector('i').classList.remove('hidden');
+            } else {
+                lowercaseCheck.classList.remove('checked');
+                lowercaseCheck.querySelector('i').classList.add('hidden');
+            }
+            
+            // Check numbers
+            if (/[0-9]/.test(password)) {
+                strength++;
+                numberCheck.classList.add('checked');
+                numberCheck.querySelector('i').classList.remove('hidden');
+            } else {
+                numberCheck.classList.remove('checked');
+                numberCheck.querySelector('i').classList.add('hidden');
+            }
+            
+            // Check special characters
+            if (/[^A-Za-z0-9]/.test(password)) {
+                strength++;
+                specialCheck.classList.add('checked');
+                specialCheck.querySelector('i').classList.remove('hidden');
+            } else {
+                specialCheck.classList.remove('checked');
+                specialCheck.querySelector('i').classList.add('hidden');
+            }
+            
+            // Update strength meter
+            strengthMeter.className = `strength-meter strength-${strength}`;
+            
+            // Update strength text
+            const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+            strengthText.textContent = strengthLabels[strength];
+            
+            return strength;
+        }
+        
+        // Check if passwords match
+        function checkPasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const matchElement = document.getElementById('passwordMatch');
+            const mismatchElement = document.getElementById('passwordMismatch');
+            
+            if (password && confirmPassword) {
+                if (password === confirmPassword) {
+                    matchElement.classList.remove('hidden');
+                    mismatchElement.classList.add('hidden');
+                    return true;
+                } else {
+                    matchElement.classList.add('hidden');
+                    mismatchElement.classList.remove('hidden');
+                    return false;
+                }
+            }
+            
+            matchElement.classList.add('hidden');
+            mismatchElement.classList.add('hidden');
+            return false;
+        }
+        
+        // Event listeners for password fields
+        passwordInput.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            checkPasswordMatch();
+        });
+        
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+        
+        // Username validation
+        const usernameInput = document.getElementById('username');
+        const usernameCheck = document.getElementById('usernameCheck');
+        const usernameError = document.getElementById('usernameError');
+
+        usernameInput.addEventListener('input', function() {
+            const username = this.value;
+            const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+
+            if (username.length === 0) {
+                usernameCheck.classList.add('hidden');
+                usernameError.classList.add('hidden');
+                return;
+            }
+
+            if (usernameRegex.test(username)) {
+                usernameCheck.classList.remove('hidden');
+                usernameError.classList.add('hidden');
+            } else {
+                usernameCheck.classList.add('hidden');
+                usernameError.textContent = 'Username must be 3-20 characters, letters and numbers only';
+                usernameError.classList.remove('hidden');
+            }
+        });
+        
+        // Email validation
+        const emailInput = document.getElementById('email');
+        const emailCheck = document.getElementById('emailCheck');
+        const emailError = document.getElementById('emailError');
+
+        emailInput.addEventListener('input', function() {
+            const email = this.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (email.length === 0) {
+                emailCheck.classList.add('hidden');
+                emailError.classList.add('hidden');
+                return;
+            }
+
+            if (emailRegex.test(email)) {
+                emailCheck.classList.remove('hidden');
+                emailError.classList.add('hidden');
+            } else {
+                emailCheck.classList.add('hidden');
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.classList.remove('hidden');
+            }
+        });
+        
+        // Terms checkbox
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        termsCheckbox.addEventListener('click', function() {
+            this.classList.toggle('checked');
+            this.querySelector('i').classList.toggle('hidden');
+        });
+        
+        // Marketing checkbox
+        const marketingCheckbox = document.getElementById('marketingCheckbox');
+        marketingCheckbox.addEventListener('click', function() {
+            this.classList.toggle('checked');
+            this.querySelector('i').classList.toggle('hidden');
+        });
+        
+        // Navigation functions
+        function goToStep(step) {
+            // Hide all steps
+            step1.classList.add('hidden');
+            step2.classList.add('hidden');
+            step3.classList.add('hidden');
+            
+            // Show current step
+            if (step === 1) {
+                step1.classList.remove('hidden');
+                prevButton.classList.add('opacity-0', 'pointer-events-none');
+            } else if (step === 2) {
+                step2.classList.remove('hidden');
+                prevButton.classList.remove('opacity-0', 'pointer-events-none');
+            } else if (step === 3) {
+                step3.classList.remove('hidden');
+                nextButton.innerHTML = 'Create Account <i class="fas fa-check ml-2"></i>';
+            }
+            
+            // Update current step display
+            currentStep = step;
+            currentStepSpan.textContent = step;
+            
+            // Update step indicators
+            Object.keys(stepIndicators).forEach(key => {
+                const indicator = stepIndicators[key];
+                indicator.classList.remove('active', 'completed', 'inactive');
+                
+                if (parseInt(key) < step) {
+                    indicator.classList.add('completed');
+                    indicator.innerHTML = '<i class="fas fa-check"></i>';
+                } else if (parseInt(key) === step) {
+                    indicator.classList.add('active');
+                    indicator.textContent = key;
+                } else {
+                    indicator.classList.add('inactive');
+                    indicator.textContent = key;
+                }
+            });
+            
+            // Update progress bars
+            if (step === 2) {
+                stepProgress[2].style.width = '0%';
+            } else if (step === 3) {
+                stepProgress[2].style.width = '100%';
+            }
+        }
+        
+        // Validate current step
+        async function validateStep(step) {
+            if (step === 1) {
+                const username = usernameInput.value.trim();
+                const email = emailInput.value.trim();
+                const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!username || !usernameRegex.test(username)) {
+                    showErrorMessage('Please enter a valid username (3-20 characters, letters and numbers only)');
+                    return false;
+                }
+
+                if (!email || !emailRegex.test(email)) {
+                    showErrorMessage('Please enter a valid email address');
+                    return false;
+                }
+
+                // Check uniqueness
+                try {
+                    const [userResponse, emailResponse] = await Promise.all([
+                        fetch(`/api/check-username?username=${encodeURIComponent(username)}`, { credentials: 'include' }),
+                        fetch(`/api/check-email?email=${encodeURIComponent(email)}`, { credentials: 'include' })
+                    ]);
+
+                    const userData = await userResponse.json();
+                    const emailData = await emailResponse.json();
+
+                    if (!userData.available) {
+                        showErrorMessage('This username is already taken');
+                        return false;
+                    }
+
+                    if (!emailData.available) {
+                        showErrorMessage('This email is already registered');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error checking uniqueness:', error);
+                    // Allow proceed if check fails
+                }
+
+                return true;
+            } else if (step === 2) {
+                const password = passwordInput.value;
+                const strength = checkPasswordStrength(password);
+
+                if (password.length < 8) {
+                    showErrorMessage('Password must be at least 8 characters long');
+                    return false;
+                }
+
+                if (strength < 2) {
+                    showErrorMessage('Please choose a stronger password');
+                    return false;
+                }
+
+                if (!checkPasswordMatch()) {
+                    showErrorMessage('Passwords do not match');
+                    return false;
+                }
+
+                return true;
+            } else if (step === 3) {
+                if (!termsCheckbox.classList.contains('checked')) {
+                    showErrorMessage('You must agree to the terms and conditions');
+                    return false;
+                }
+
+                return true;
+            }
+
+            return true;
+        }
+        
+        // Next button click
+        nextButton.addEventListener('click', async function() {
+            if (currentStep < totalSteps) {
+                if (await validateStep(currentStep)) {
+                    goToStep(currentStep + 1);
+                }
+            } else {
+                // Final step - submit registration
+                if (await validateStep(currentStep)) {
+                    submitRegistration();
+                }
+            }
+        });
+        
+        // Previous button click
+        prevButton.addEventListener('click', function() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+                if (currentStep === 1) {
+                    nextButton.innerHTML = 'Continue <i class="fas fa-arrow-right ml-2"></i>';
+                }
+            }
+        });
+        
+        // Submit registration
+        function submitRegistration() {
+            // Show loading state
+            nextButton.disabled = true;
+            nextButton.innerHTML = '<div class="spinner"></div>';
+
+            // Collect form data
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            formData.append('firstName', document.getElementById('firstName').value);
+            formData.append('lastName', document.getElementById('lastName').value);
+            formData.append('country', document.getElementById('country').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('experience', document.querySelector('input[name="experience"]:checked').value);
+            const tradingTypes = Array.from(document.querySelectorAll('input[name="tradingType"]:checked')).map(cb => cb.value);
+            tradingTypes.forEach(type => formData.append('tradingType', type));
+            formData.append('defaultTimeframe', document.getElementById('defaultTimeframe').value);
+            formData.append('theme', document.getElementById('theme').value);
+            formData.append('enable2fa', document.getElementById('enable2fa').checked);
+
+            // Submit to backend
+            fetch('/register', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    showSuccessMessage('Account created successfully! Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
+                } else {
+                    return response.json().then(data => {
+                        showErrorMessage(data.detail || 'Registration failed');
+                        nextButton.disabled = false;
+                        nextButton.innerHTML = 'Create Account <i class="fas fa-check ml-2"></i>';
+                    });
+                }
+            })
+            .catch(error => {
+                showErrorMessage('Network error. Please try again.');
+                nextButton.disabled = false;
+                nextButton.innerHTML = 'Create Account <i class="fas fa-check ml-2"></i>';
+            });
+        }
+        
+        // Show success message
+        function showSuccessMessage(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 glass-dark rounded-xl p-4 border-l-4 border-green-500 transform translate-x-full transition-transform duration-300 z-50';
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-check text-green-400"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Success!</div>
+                        <div class="text-sm text-gray-300">${message}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Show error message
+        function showErrorMessage(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 glass-dark rounded-xl p-4 border-l-4 border-red-500 transform translate-x-full transition-transform duration-300 z-50';
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-exclamation text-red-400"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Validation Error</div>
+                        <div class="text-sm text-gray-300">${message}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 4000);
+        }
+        
+        // Load countries from predefined list
+        function loadCountries() {
+            const countries = [
+                { code: 'AF', name: 'Afghanistan' },
+                { code: 'AL', name: 'Albania' },
+                { code: 'DZ', name: 'Algeria' },
+                { code: 'AS', name: 'American Samoa' },
+                { code: 'AD', name: 'Andorra' },
+                { code: 'AO', name: 'Angola' },
+                { code: 'AI', name: 'Anguilla' },
+                { code: 'AQ', name: 'Antarctica' },
+                { code: 'AG', name: 'Antigua and Barbuda' },
+                { code: 'AR', name: 'Argentina' },
+                { code: 'AM', name: 'Armenia' },
+                { code: 'AW', name: 'Aruba' },
+                { code: 'AU', name: 'Australia' },
+                { code: 'AT', name: 'Austria' },
+                { code: 'AZ', name: 'Azerbaijan' },
+                { code: 'BS', name: 'Bahamas' },
+                { code: 'BH', name: 'Bahrain' },
+                { code: 'BD', name: 'Bangladesh' },
+                { code: 'BB', name: 'Barbados' },
+                { code: 'BY', name: 'Belarus' },
+                { code: 'BE', name: 'Belgium' },
+                { code: 'BZ', name: 'Belize' },
+                { code: 'BJ', name: 'Benin' },
+                { code: 'BM', name: 'Bermuda' },
+                { code: 'BT', name: 'Bhutan' },
+                { code: 'BO', name: 'Bolivia' },
+                { code: 'BA', name: 'Bosnia and Herzegovina' },
+                { code: 'BW', name: 'Botswana' },
+                { code: 'BR', name: 'Brazil' },
+                { code: 'BN', name: 'Brunei' },
+                { code: 'BG', name: 'Bulgaria' },
+                { code: 'BF', name: 'Burkina Faso' },
+                { code: 'BI', name: 'Burundi' },
+                { code: 'CV', name: 'Cabo Verde' },
+                { code: 'KH', name: 'Cambodia' },
+                { code: 'CM', name: 'Cameroon' },
+                { code: 'CA', name: 'Canada' },
+                { code: 'KY', name: 'Cayman Islands' },
+                { code: 'CF', name: 'Central African Republic' },
+                { code: 'TD', name: 'Chad' },
+                { code: 'CL', name: 'Chile' },
+                { code: 'CN', name: 'China' },
+                { code: 'CO', name: 'Colombia' },
+                { code: 'KM', name: 'Comoros' },
+                { code: 'CG', name: 'Congo' },
+                { code: 'CD', name: 'Congo (Democratic Republic)' },
+                { code: 'CK', name: 'Cook Islands' },
+                { code: 'CR', name: 'Costa Rica' },
+                { code: 'HR', name: 'Croatia' },
+                { code: 'CU', name: 'Cuba' },
+                { code: 'CW', name: 'Curaçao' },
+                { code: 'CY', name: 'Cyprus' },
+                { code: 'CZ', name: 'Czech Republic' },
+                { code: 'DK', name: 'Denmark' },
+                { code: 'DJ', name: 'Djibouti' },
+                { code: 'DM', name: 'Dominica' },
+                { code: 'DO', name: 'Dominican Republic' },
+                { code: 'EC', name: 'Ecuador' },
+                { code: 'EG', name: 'Egypt' },
+                { code: 'SV', name: 'El Salvador' },
+                { code: 'GQ', name: 'Equatorial Guinea' },
+                { code: 'ER', name: 'Eritrea' },
+                { code: 'EE', name: 'Estonia' },
+                { code: 'SZ', name: 'Eswatini' },
+                { code: 'ET', name: 'Ethiopia' },
+                { code: 'FK', name: 'Falkland Islands' },
+                { code: 'FO', name: 'Faroe Islands' },
+                { code: 'FJ', name: 'Fiji' },
+                { code: 'FI', name: 'Finland' },
+                { code: 'FR', name: 'France' },
+                { code: 'GA', name: 'Gabon' },
+                { code: 'GM', name: 'Gambia' },
+                { code: 'GE', name: 'Georgia' },
+                { code: 'DE', name: 'Germany' },
+                { code: 'GH', name: 'Ghana' },
+                { code: 'GI', name: 'Gibraltar' },
+                { code: 'GR', name: 'Greece' },
+                { code: 'GL', name: 'Greenland' },
+                { code: 'GD', name: 'Grenada' },
+                { code: 'GU', name: 'Guam' },
+                { code: 'GT', name: 'Guatemala' },
+                { code: 'GG', name: 'Guernsey' },
+                { code: 'GN', name: 'Guinea' },
+                { code: 'GW', name: 'Guinea-Bissau' },
+                { code: 'GY', name: 'Guyana' },
+                { code: 'HT', name: 'Haiti' },
+                { code: 'HN', name: 'Honduras' },
+                { code: 'HK', name: 'Hong Kong' },
+                { code: 'HU', name: 'Hungary' },
+                { code: 'IS', name: 'Iceland' },
+                { code: 'IN', name: 'India' },
+                { code: 'ID', name: 'Indonesia' },
+                { code: 'IR', name: 'Iran' },
+                { code: 'IQ', name: 'Iraq' },
+                { code: 'IE', name: 'Ireland' },
+                { code: 'IM', name: 'Isle of Man' },
+                { code: 'IL', name: 'Israel' },
+                { code: 'IT', name: 'Italy' },
+                { code: 'JM', name: 'Jamaica' },
+                { code: 'JP', name: 'Japan' },
+                { code: 'JE', name: 'Jersey' },
+                { code: 'JO', name: 'Jordan' },
+                { code: 'KZ', name: 'Kazakhstan' },
+                { code: 'KE', name: 'Kenya' },
+                { code: 'KI', name: 'Kiribati' },
+                { code: 'KP', name: 'Korea (North)' },
+                { code: 'KR', name: 'Korea (South)' },
+                { code: 'KW', name: 'Kuwait' },
+                { code: 'KG', name: 'Kyrgyzstan' },
+                { code: 'LA', name: 'Laos' },
+                { code: 'LV', name: 'Latvia' },
+                { code: 'LB', name: 'Lebanon' },
+                { code: 'LS', name: 'Lesotho' },
+                { code: 'LR', name: 'Liberia' },
+                { code: 'LY', name: 'Libya' },
+                { code: 'LI', name: 'Liechtenstein' },
+                { code: 'LT', name: 'Lithuania' },
+                { code: 'LU', name: 'Luxembourg' },
+                { code: 'MO', name: 'Macao' },
+                { code: 'MG', name: 'Madagascar' },
+                { code: 'MW', name: 'Malawi' },
+                { code: 'MY', name: 'Malaysia' },
+                { code: 'MV', name: 'Maldives' },
+                { code: 'ML', name: 'Mali' },
+                { code: 'MT', name: 'Malta' },
+                { code: 'MH', name: 'Marshall Islands' },
+                { code: 'MR', name: 'Mauritania' },
+                { code: 'MU', name: 'Mauritius' },
+                { code: 'MX', name: 'Mexico' },
+                { code: 'FM', name: 'Micronesia' },
+                { code: 'MD', name: 'Moldova' },
+                { code: 'MC', name: 'Monaco' },
+                { code: 'MN', name: 'Mongolia' },
+                { code: 'ME', name: 'Montenegro' },
+                { code: 'MS', name: 'Montserrat' },
+                { code: 'MA', name: 'Morocco' },
+                { code: 'MZ', name: 'Mozambique' },
+                { code: 'MM', name: 'Myanmar' },
+                { code: 'NA', name: 'Namibia' },
+                { code: 'NR', name: 'Nauru' },
+                { code: 'NP', name: 'Nepal' },
+                { code: 'NL', name: 'Netherlands' },
+                { code: 'NC', name: 'New Caledonia' },
+                { code: 'NZ', name: 'New Zealand' },
+                { code: 'NI', name: 'Nicaragua' },
+                { code: 'NE', name: 'Niger' },
+                { code: 'NG', name: 'Nigeria' },
+                { code: 'NU', name: 'Niue' },
+                { code: 'NF', name: 'Norfolk Island' },
+                { code: 'MK', name: 'North Macedonia' },
+                { code: 'MP', name: 'Northern Mariana Islands' },
+                { code: 'NO', name: 'Norway' },
+                { code: 'OM', name: 'Oman' },
+                { code: 'PK', name: 'Pakistan' },
+                { code: 'PW', name: 'Palau' },
+                { code: 'PS', name: 'Palestine' },
+                { code: 'PA', name: 'Panama' },
+                { code: 'PG', name: 'Papua New Guinea' },
+                { code: 'PY', name: 'Paraguay' },
+                { code: 'PE', name: 'Peru' },
+                { code: 'PH', name: 'Philippines' },
+                { code: 'PN', name: 'Pitcairn' },
+                { code: 'PL', name: 'Poland' },
+                { code: 'PT', name: 'Portugal' },
+                { code: 'PR', name: 'Puerto Rico' },
+                { code: 'QA', name: 'Qatar' },
+                { code: 'RO', name: 'Romania' },
+                { code: 'RU', name: 'Russia' },
+                { code: 'RW', name: 'Rwanda' },
+                { code: 'WS', name: 'Samoa' },
+                { code: 'SM', name: 'San Marino' },
+                { code: 'ST', name: 'São Tomé and Príncipe' },
+                { code: 'SA', name: 'Saudi Arabia' },
+                { code: 'SN', name: 'Senegal' },
+                { code: 'RS', name: 'Serbia' },
+                { code: 'SC', name: 'Seychelles' },
+                { code: 'SL', name: 'Sierra Leone' },
+                { code: 'SG', name: 'Singapore' },
+                { code: 'SX', name: 'Sint Maarten' },
+                { code: 'SK', name: 'Slovakia' },
+                { code: 'SI', name: 'Slovenia' },
+                { code: 'SB', name: 'Solomon Islands' },
+                { code: 'SO', name: 'Somalia' },
+                { code: 'ZA', name: 'South Africa' },
+                { code: 'SS', name: 'South Sudan' },
+                { code: 'ES', name: 'Spain' },
+                { code: 'LK', name: 'Sri Lanka' },
+                { code: 'SD', name: 'Sudan' },
+                { code: 'SR', name: 'Suriname' },
+                { code: 'SE', name: 'Sweden' },
+                { code: 'CH', name: 'Switzerland' },
+                { code: 'SY', name: 'Syria' },
+                { code: 'TW', name: 'Taiwan' },
+                { code: 'TJ', name: 'Tajikistan' },
+                { code: 'TZ', name: 'Tanzania' },
+                { code: 'TH', name: 'Thailand' },
+                { code: 'TL', name: 'Timor-Leste' },
+                { code: 'TG', name: 'Togo' },
+                { code: 'TK', name: 'Tokelau' },
+                { code: 'TO', name: 'Tonga' },
+                { code: 'TT', name: 'Trinidad and Tobago' },
+                { code: 'TN', name: 'Tunisia' },
+                { code: 'TR', name: 'Turkey' },
+                { code: 'TM', name: 'Turkmenistan' },
+                { code: 'TC', name: 'Turks and Caicos Islands' },
+                { code: 'TV', name: 'Tuvalu' },
+                { code: 'UG', name: 'Uganda' },
+                { code: 'UA', name: 'Ukraine' },
+                { code: 'AE', name: 'United Arab Emirates' },
+                { code: 'GB', name: 'United Kingdom' },
+                { code: 'US', name: 'United States' },
+                { code: 'UY', name: 'Uruguay' },
+                { code: 'UZ', name: 'Uzbekistan' },
+                { code: 'VU', name: 'Vanuatu' },
+                { code: 'VA', name: 'Vatican City' },
+                { code: 'VE', name: 'Venezuela' },
+                { code: 'VN', name: 'Vietnam' },
+                { code: 'VG', name: 'Virgin Islands (British)' },
+                { code: 'VI', name: 'Virgin Islands (U.S.)' },
+                { code: 'WF', name: 'Wallis and Futuna' },
+                { code: 'EH', name: 'Western Sahara' },
+                { code: 'YE', name: 'Yemen' },
+                { code: 'ZM', name: 'Zambia' },
+                { code: 'ZW', name: 'Zimbabwe' }
+            ];
+
+            const countrySelect = document.getElementById('country');
+            countrySelect.innerHTML = '<option value="">Select Country</option>';
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.code;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            goToStep(1);
+            loadCountries();
+
+            // Auto-fill demo data for testing
+            const urlParams = new URLSearchParams(window.location.search);
+            const demo = urlParams.get('demo');
+
+            if (demo === 'true') {
+                document.getElementById('username').value = 'trader_pro';
+                document.getElementById('email').value = 'demo@cryptofuturespro.com';
+                document.getElementById('firstName').value = 'Demo';
+                document.getElementById('lastName').value = 'Trader';
+                document.getElementById('country').value = 'SG';
+                document.getElementById('password').value = 'Demo@123';
+                document.getElementById('confirmPassword').value = 'Demo@123';
+
+                // Trigger validation
+                usernameInput.dispatchEvent(new Event('input'));
+                emailInput.dispatchEvent(new Event('input'));
+                passwordInput.dispatchEvent(new Event('input'));
+                confirmPasswordInput.dispatchEvent(new Event('input'));
+
+                // Auto-check terms
+                termsCheckbox.classList.add('checked');
+                termsCheckbox.querySelector('i').classList.remove('hidden');
+
+                showSuccessMessage('Demo data auto-filled. Complete the registration steps.');
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Enter key to go to next step
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                nextButton.click();
+            }
+            
+            // Esc key to go back
+            if (e.key === 'Escape' && currentStep > 1) {
+                prevButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
