@@ -6,18 +6,41 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 from typing import List, Optional
 import requests
 from binance.client import Client
 import json
 import os
+import time
 from cryptography.fernet import Fernet
 import base64
 
-# Encryption setup
-ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', base64.urlsafe_b64encode(os.urandom(32)).decode())
+# Encryption setup - Use environment variable or generate persistent key
+ENCRYPTION_KEY_FILE = '.encryption_key'
+
+def get_or_create_key():
+    try:
+        if os.path.exists(ENCRYPTION_KEY_FILE):
+            with open(ENCRYPTION_KEY_FILE, 'r') as f:
+                key = f.read().strip()
+                if key:
+                    return key
+    except:
+        pass
+
+    # Generate new key
+    key = base64.urlsafe_b64encode(os.urandom(32)).decode()
+    try:
+        with open(ENCRYPTION_KEY_FILE, 'w') as f:
+            f.write(key)
+    except:
+        pass  # If we can't write, just use the key in memory
+
+    return key
+
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY') or get_or_create_key()
 cipher = Fernet(ENCRYPTION_KEY.encode())
 
 def encrypt_data(data: str) -> str:
@@ -311,6 +334,36 @@ async def profile(request: Request, user_id: Optional[str] = Cookie(None), db: S
 
     return templates.TemplateResponse("profile.html", {"request": request, "user": user})
 
+# Balances page (protected)
+@app.get("/balances", response_class=HTMLResponse)
+async def balances_page(request: Request, user_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    try:
+        user = db.query(User).get(int(user_id))
+        if not user:
+            return RedirectResponse("/login", status_code=303)
+    except:
+        return RedirectResponse("/login", status_code=303)
+
+    return templates.TemplateResponse("balances.html", {"request": request, "user": user})
+
+# API Keys page (protected)
+@app.get("/api-keys", response_class=HTMLResponse)
+async def api_keys_page(request: Request, user_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    try:
+        user = db.query(User).get(int(user_id))
+        if not user:
+            return RedirectResponse("/login", status_code=303)
+    except:
+        return RedirectResponse("/login", status_code=303)
+
+    return templates.TemplateResponse("api_keys.html", {"request": request, "user": user})
+
 # ===================== PROFILE API ENDPOINTS =====================
 
 @app.post("/api/profile/personal")
@@ -571,23 +624,393 @@ async def update_binance_keys(
 
     # Validate keys if provided
     if api_key and secret_key:
+        api_key = api_key.strip()
+        secret_key = secret_key.strip()
+
+        # Basic format validation
+        if len(api_key) < 20 or len(secret_key) < 20:
+            raise HTTPException(status_code=400, detail="API key and secret key appear to be too short. Please check that you copied them correctly from Binance.")
+
+        if not api_key.replace('-', '').replace('_', '').isalnum() or not secret_key.replace('-', '').replace('_', '').isalnum():
+            raise HTTPException(status_code=400, detail="API key format appears invalid. Please check that you copied them correctly from Binance.")
+
+        # Test the keys with better error handling
+        validation_passed = False
+        validation_error = None
+
         try:
-            # Test the keys by making a simple API call
-            test_client = Client(api_key.strip(), secret_key.strip())
-            test_client.get_account()
+            # Create client
+            test_client = Client(api_key, secret_key)
+
+            # Try get_account with large recvWindow for timestamp tolerance
+            account = test_client.get_account(recvWindow=60000)
+            if account and 'balances' in account:
+                validation_passed = True
+            else:
+                validation_error = "API keys are valid but cannot access account information. Please ensure 'Read Info' permission is enabled in your Binance API settings."
         except Exception as e:
-            raise HTTPException(status_code=400, detail="Invalid API keys")
+            error_str = str(e).lower()
+            if 'api-key' in error_str or 'signature' in error_str or 'invalid' in error_str:
+                validation_error = "Invalid API key or secret key. Please check that you copied them correctly from Binance."
+            elif 'permission' in error_str or 'forbidden' in error_str:
+                validation_error = "API keys do not have sufficient permissions. Please enable 'Read Info' permission in your Binance API settings."
+            elif 'timestamp' in error_str or 'time' in error_str:
+                validation_error = "There seems to be a timestamp synchronization issue. Please ensure your system clock is set to the correct time and date. If the problem persists, try regenerating your API keys in Binance."
+            elif 'ip' in error_str or 'restrict' in error_str:
+                validation_error = "API access is restricted by IP. Please disable IP restrictions or add your IP to the whitelist in Binance."
+            else:
+                validation_error = f"API key validation failed: {str(e)}. Please ensure your keys have the correct permissions enabled."
+
+        # For timestamp issues, allow saving with a warning
+        if validation_error and 'timestamp' in validation_error.lower():
+            # Allow saving but warn the user
+            pass  # Continue to save the keys
+        elif validation_error:
+            raise HTTPException(status_code=400, detail=validation_error)
 
         # Encrypt and store keys
-        user.binance_api_key = encrypt_data(api_key.strip())
-        user.binance_secret_key = encrypt_data(secret_key.strip())
+        user.binance_api_key = encrypt_data(api_key)
+        user.binance_secret_key = encrypt_data(secret_key)
+
+        # Prepare success message
+        if validation_error and 'timestamp' in validation_error.lower():
+            message = "Binance API keys saved successfully. Note: There was a timestamp synchronization issue during validation. Please ensure your system clock is correct, and try viewing balances later to confirm the connection works."
+        else:
+            message = "Binance API keys updated and validated successfully"
     else:
         # Remove keys
         user.binance_api_key = None
         user.binance_secret_key = None
+        message = "Binance API keys removed successfully"
 
     db.commit()
-    return {"success": True, "message": "Binance API keys updated successfully"}
+    return {"success": True, "message": message}
+
+@app.get("/api/balances/spot")
+async def get_spot_balances(
+    request: Request,
+    user_id: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.binance_api_key or not user.binance_secret_key:
+        raise HTTPException(status_code=400, detail="Binance API keys not configured")
+
+    try:
+        api_key = decrypt_data(user.binance_api_key)
+        secret_key = decrypt_data(user.binance_secret_key)
+
+        # Create client (same as working profile endpoint)
+        client = Client(api_key, secret_key)
+
+        # Get account information with very large recvWindow for timestamp tolerance
+        account = client.get_account(recvWindow=60000)
+        balances = account['balances']
+
+        # Get current prices for USD conversion (with cache busting)
+        tickers_url = f"https://api.binance.com/api/v3/ticker/price?_={int(time.time() * 1000)}"
+        tickers_response = requests.get(tickers_url, timeout=10)
+        tickers = {ticker['symbol']: float(ticker['price']) for ticker in tickers_response.json()}
+
+        # Filter out zero balances and format
+        filtered_balances = []
+        total_usd_value = 0
+
+        for balance in balances:
+            free = float(balance['free'])
+            locked = float(balance['locked'])
+            total = free + locked
+
+            if total > 0:
+                # Calculate USD value
+                usd_value = 0
+                btc_value = 0
+
+                if balance['asset'] == 'BTC':
+                    usd_value = total * tickers.get('BTCUSDT', 0)
+                    btc_value = total
+                elif balance['asset'] == 'USDT':
+                    usd_value = total
+                    btc_value = total / tickers.get('BTCUSDT', 1)
+                else:
+                    # For other assets, convert via BTC or USDT pair
+                    symbol_btc = f"{balance['asset']}BTC"
+                    symbol_usdt = f"{balance['asset']}USDT"
+
+                    if symbol_usdt in tickers:
+                        usd_value = total * tickers[symbol_usdt]
+                        btc_value = usd_value / tickers.get('BTCUSDT', 1)
+                    elif symbol_btc in tickers:
+                        btc_value = total * tickers[symbol_btc]
+                        usd_value = btc_value * tickers.get('BTCUSDT', 1)
+
+                total_usd_value += usd_value
+
+                filtered_balances.append({
+                    'asset': balance['asset'],
+                    'free': free,
+                    'locked': locked,
+                    'total': total,
+                    'btc_value': btc_value,
+                    'usd_value': usd_value
+                })
+
+        # Add cache control headers to prevent caching
+        response = {
+            "balances": filtered_balances,
+            "total_usd_value": total_usd_value,
+            "total_btc_value": total_usd_value / tickers.get('BTCUSDT', 1),
+            "timestamp": int(time.time() * 1000),  # Current timestamp for freshness check
+            "server_time": account.get('updateTime', int(time.time() * 1000))
+        }
+
+        return response
+    except Exception as e:
+        error_str = str(e).lower()
+        if 'permission' in error_str or 'forbidden' in error_str:
+            error_msg = "Unable to fetch spot balances. Please ensure your API keys have 'Read Info' permission enabled."
+        elif 'api-key' in error_str or 'signature' in error_str:
+            error_msg = "API keys appear to be invalid. Please re-enter your keys."
+        elif 'rate limit' in error_str:
+            error_msg = "Rate limit exceeded. Please try again later."
+        else:
+            error_msg = f"Error fetching spot balances: {str(e)}"
+        raise HTTPException(status_code=400, detail=error_msg)
+
+@app.get("/api/balances/futures")
+async def get_futures_balances(
+    request: Request,
+    user_id: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.binance_api_key or not user.binance_secret_key:
+        raise HTTPException(status_code=400, detail="Binance API keys not configured")
+
+    try:
+        api_key = decrypt_data(user.binance_api_key)
+        secret_key = decrypt_data(user.binance_secret_key)
+
+        # Create client (same as working profile endpoint)
+        client = Client(api_key, secret_key)
+
+        # Get futures account balance
+        futures_balances = client.futures_account_balance()
+
+        # Get current prices for USD conversion (with cache busting)
+        tickers_url = f"https://api.binance.com/api/v3/ticker/price?_={int(time.time() * 1000)}"
+        tickers_response = requests.get(tickers_url, timeout=10)
+        tickers = {ticker['symbol']: float(ticker['price']) for ticker in tickers_response.json()}
+
+        # Filter and format futures balances
+        filtered_balances = []
+        total_wallet_balance = 0
+        total_unrealized_pnl = 0
+
+        for balance in futures_balances:
+            wallet_balance = float(balance['balance'])
+            if wallet_balance > 0:
+                usd_value = 0
+                if balance['asset'] == 'USDT':
+                    usd_value = wallet_balance
+                elif balance['asset'] == 'BTC':
+                    usd_value = wallet_balance * tickers.get('BTCUSDT', 0)
+                else:
+                    # Convert other assets
+                    symbol_usdt = f"{balance['asset']}USDT"
+                    if symbol_usdt in tickers:
+                        usd_value = wallet_balance * tickers[symbol_usdt]
+
+                total_wallet_balance += usd_value
+
+                filtered_balances.append({
+                    'asset': balance['asset'],
+                    'wallet_balance': wallet_balance,
+                    'usd_value': usd_value
+                })
+
+        # Get futures positions
+        positions = client.futures_position_information()
+
+        active_positions = []
+        margin_used = 0
+
+        for position in positions:
+            position_amt = float(position['positionAmt'])
+            if position_amt != 0:
+                entry_price = float(position['entryPrice'])
+                mark_price = float(position['markPrice'])
+                leverage = int(position['leverage'])
+                isolated = position['isolated']
+                unrealized_profit = float(position['unRealizedProfit'])
+
+                margin = abs(position_amt) * entry_price / leverage
+                margin_used += margin
+                total_unrealized_pnl += unrealized_profit
+
+                active_positions.append({
+                    'symbol': position['symbol'],
+                    'position_amt': position_amt,
+                    'entry_price': entry_price,
+                    'mark_price': mark_price,
+                    'leverage': leverage,
+                    'isolated': isolated,
+                    'unrealized_profit': unrealized_profit,
+                    'margin': margin,
+                    'liquidation_price': float(position['liquidationPrice'])
+                })
+
+        return {
+            "balances": filtered_balances,
+            "positions": active_positions,
+            "total_wallet_balance": total_wallet_balance,
+            "margin_used": margin_used,
+            "unrealized_pnl": total_unrealized_pnl,
+            "available_balance": total_wallet_balance - margin_used,
+            "timestamp": int(time.time() * 1000),  # Current timestamp for freshness check
+            "server_time": int(time.time() * 1000)
+        }
+    except Exception as e:
+        error_str = str(e).lower()
+        if 'permission' in error_str or 'forbidden' in error_str:
+            error_msg = "Unable to fetch futures balances. Please ensure your API keys have futures trading permissions enabled."
+        elif 'api-key' in error_str or 'signature' in error_str:
+            error_msg = "API keys appear to be invalid. Please re-enter your keys."
+        elif 'rate limit' in error_str:
+            error_msg = "Rate limit exceeded. Please try again later."
+        else:
+            error_msg = f"Error fetching futures balances: {str(e)}"
+        raise HTTPException(status_code=400, detail=error_msg)
+
+@app.get("/api/balances/history")
+async def get_transaction_history(
+    request: Request,
+    type: str = "all",
+    start_date: str = None,
+    end_date: str = None,
+    limit: int = 50,
+    user_id: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.binance_api_key or not user.binance_secret_key:
+        raise HTTPException(status_code=400, detail="Binance API keys not configured")
+
+    try:
+        api_key = decrypt_data(user.binance_api_key)
+        secret_key = decrypt_data(user.binance_secret_key)
+        client = Client(api_key, secret_key)
+
+        transactions = []
+
+        # Get deposits (recent only)
+        if type in ["all", "deposits"]:
+            try:
+                deposits = client.get_deposit_history()
+                # Filter for recent deposits (last 30 days)
+                thirty_days_ago = int((datetime.utcnow() - timedelta(days=30)).timestamp() * 1000)
+                recent_deposits = [d for d in deposits.get('depositList', []) if d.get('insertTime', 0) > thirty_days_ago][:limit//4]
+                for deposit in recent_deposits:
+                    transactions.append({
+                        'id': deposit.get('id'),
+                        'type': 'deposit',
+                        'asset': deposit.get('coin'),
+                        'amount': float(deposit.get('amount')),
+                        'status': deposit.get('status'),
+                        'timestamp': deposit.get('insertTime'),
+                        'tx_id': deposit.get('txId'),
+                        'network': deposit.get('network')
+                    })
+            except:
+                pass
+
+        # Get withdrawals (recent only)
+        if type in ["all", "withdrawals"]:
+            try:
+                withdrawals = client.get_withdraw_history()
+                # Filter for recent withdrawals (last 30 days)
+                thirty_days_ago = int((datetime.utcnow() - timedelta(days=30)).timestamp() * 1000)
+                recent_withdrawals = [w for w in withdrawals.get('withdrawList', []) if w.get('applyTime', 0) > thirty_days_ago][:limit//4]
+                for withdrawal in recent_withdrawals:
+                    transactions.append({
+                        'id': withdrawal.get('id'),
+                        'type': 'withdrawal',
+                        'asset': withdrawal.get('coin'),
+                        'amount': -float(withdrawal.get('amount')),  # Negative for withdrawals
+                        'status': withdrawal.get('status'),
+                        'timestamp': withdrawal.get('applyTime'),
+                        'tx_id': withdrawal.get('txId'),
+                        'network': withdrawal.get('network')
+                    })
+            except:
+                pass
+
+        # Get spot trades (recent only)
+        if type in ["all", "trades"]:
+            try:
+                # Get recent trades for major pairs
+                symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT']
+                for symbol in symbols:
+                    try:
+                        # Get trades from last 30 days
+                        thirty_days_ago = int((datetime.utcnow() - timedelta(days=30)).timestamp() * 1000)
+                        trades = client.get_my_trades(symbol=symbol, limit=10)
+                        # Filter recent trades
+                        recent_trades = [t for t in trades if t['time'] > thirty_days_ago][:2]  # Limit per symbol
+                        for trade in recent_trades:
+                            transactions.append({
+                                'id': trade['id'],
+                                'type': 'trade',
+                                'asset': symbol.replace('USDT', ''),
+                                'amount': float(trade['qty']) if trade['isBuyer'] else -float(trade['qty']),
+                                'price': float(trade['price']),
+                                'total': float(trade['quoteQty']),
+                                'status': 'filled',
+                                'timestamp': trade['time'],
+                                'symbol': symbol,
+                                'side': 'buy' if trade['isBuyer'] else 'sell'
+                            })
+                    except:
+                        continue
+            except:
+                pass
+
+        # Sort by timestamp (most recent first)
+        transactions.sort(key=lambda x: x.get('timestamp', 0), reverse=True)
+
+        # Limit results
+        transactions = transactions[:limit]
+
+        return {"transactions": transactions}
+    except Exception as e:
+        error_str = str(e).lower()
+        if 'permission' in error_str or 'forbidden' in error_str:
+            error_msg = "Unable to fetch transaction history. Please ensure your API keys have appropriate permissions enabled."
+        elif 'api-key' in error_str or 'signature' in error_str:
+            error_msg = "API keys appear to be invalid. Please re-enter your keys."
+        elif 'rate limit' in error_str:
+            error_msg = "Rate limit exceeded. Please try again later."
+        else:
+            error_msg = f"Error fetching transaction history: {str(e)}"
+        raise HTTPException(status_code=400, detail=error_msg)
 
 @app.get("/api/profile/binance-balance")
 async def get_binance_balance(
@@ -608,10 +1031,12 @@ async def get_binance_balance(
     try:
         api_key = decrypt_data(user.binance_api_key)
         secret_key = decrypt_data(user.binance_secret_key)
+
+        # Create client
         client = Client(api_key, secret_key)
 
-        # Get account information
-        account = client.get_account()
+        # Get account information with very large recvWindow for timestamp tolerance
+        account = client.get_account(recvWindow=60000)
         balances = account['balances']
 
         # Filter out zero balances and format
@@ -630,4 +1055,100 @@ async def get_binance_balance(
 
         return {"balances": filtered_balances}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error fetching balance: {str(e)}")
+        error_str = str(e).lower()
+        if 'permission' in error_str or 'forbidden' in error_str:
+            error_msg = "Unable to fetch balances. Please ensure your API keys have 'Read Info' permission enabled."
+        elif 'api-key' in error_str or 'signature' in error_str:
+            error_msg = "API keys appear to be invalid. Please re-enter your keys."
+        elif 'rate limit' in error_str:
+            error_msg = "Rate limit exceeded. Please try again later."
+        else:
+            error_msg = f"Error fetching balance: {str(e)}"
+        raise HTTPException(status_code=400, detail=error_msg)
+
+@app.get("/api/profile/binance-futures-balance")
+async def get_binance_futures_balance(
+    request: Request,
+    user_id: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.binance_api_key or not user.binance_secret_key:
+        raise HTTPException(status_code=400, detail="Binance API keys not configured")
+
+    try:
+        api_key = decrypt_data(user.binance_api_key)
+        secret_key = decrypt_data(user.binance_secret_key)
+
+        # Create client
+        client = Client(api_key, secret_key)
+
+        # Get futures account balance with proper timestamp handling
+        import time
+        current_timestamp = int(time.time() * 1000)
+        futures_balances = client.futures_account_balance(timestamp=current_timestamp)
+
+        # Get futures positions with proper timestamp handling
+        positions = client.futures_position_information(timestamp=current_timestamp)
+
+        # Filter and format futures balances
+        filtered_balances = []
+        total_wallet_balance = 0
+        total_unrealized_pnl = 0
+
+        for balance in futures_balances:
+            wallet_balance = float(balance['balance'])
+            if wallet_balance > 0:
+                total_wallet_balance += wallet_balance
+                filtered_balances.append({
+                    'asset': balance['asset'],
+                    'wallet_balance': wallet_balance
+                })
+
+        active_positions = []
+        margin_used = 0
+
+        for position in positions:
+            position_amt = float(position['positionAmt'])
+            if position_amt != 0:
+                entry_price = float(position['entryPrice'])
+                unrealized_profit = float(position['unRealizedProfit'])
+                margin = abs(position_amt) * entry_price / int(position['leverage'])
+
+                margin_used += margin
+                total_unrealized_pnl += unrealized_profit
+
+                active_positions.append({
+                    'symbol': position['symbol'],
+                    'position_amt': position_amt,
+                    'entry_price': entry_price,
+                    'unrealized_profit': unrealized_profit,
+                    'margin': margin,
+                    'liquidation_price': float(position['liquidationPrice'])
+                })
+
+        return {
+            "balances": filtered_balances,
+            "positions": active_positions,
+            "total_wallet_balance": total_wallet_balance,
+            "margin_used": margin_used,
+            "unrealized_pnl": total_unrealized_pnl,
+            "available_balance": total_wallet_balance - margin_used
+        }
+    except Exception as e:
+        error_str = str(e).lower()
+        if 'permission' in error_str or 'forbidden' in error_str:
+            error_msg = "Unable to fetch futures balances. Please ensure your API keys have futures trading permissions enabled."
+        elif 'api-key' in error_str or 'signature' in error_str:
+            error_msg = "API keys appear to be invalid. Please re-enter your keys."
+        elif 'rate limit' in error_str:
+            error_msg = "Rate limit exceeded. Please try again later."
+        else:
+            error_msg = f"Error fetching futures balance: {str(e)}"
+        raise HTTPException(status_code=400, detail=error_msg)

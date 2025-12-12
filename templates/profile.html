@@ -1499,9 +1499,11 @@
                                                     Save Keys
                                                 </button>
                                             </div>
-                                            <div class="text-sm text-gray-400">
-                                                <i class="fas fa-info-circle mr-1"></i>
-                                                Your API keys are encrypted and stored securely. Only read permissions are required.
+                                            <div class="text-sm text-gray-400 space-y-2">
+                                                <div><i class="fas fa-info-circle mr-1"></i>Your API keys are encrypted and stored securely.</div>
+                                                <div><strong>Required Permissions:</strong> Enable "Read Info" in your Binance API settings.</div>
+                                                <div><i class="fas fa-clock mr-1"></i>Automatic timestamp synchronization handles clock differences.</div>
+                                                <div><a href="https://www.binance.com/en/support/faq/how-to-create-api-360002502072" target="_blank" class="text-blue-400 hover:text-blue-300 underline">How to create API keys →</a></div>
                                             </div>
                                         </div>
 
@@ -2251,16 +2253,16 @@
                                 balanceItem.innerHTML = `
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
-                                            <span class="font-bold text-blue-400 text-sm">${balance.asset}</span>
+                                            <span class="font-bold text-blue-400 text-sm">${balance.asset.substring(0, 3)}</span>
                                         </div>
                                         <div>
                                             <div class="font-medium">${balance.asset}</div>
-                                            <div class="text-sm text-gray-400">${balance.free.toFixed(8)} free</div>
+                                            <div class="text-sm text-gray-400">${parseFloat(balance.free).toFixed(4)} free</div>
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="font-bold">${balance.total.toFixed(8)}</div>
-                                        <div class="text-sm text-gray-400">${balance.locked.toFixed(8)} locked</div>
+                                        <div class="font-bold">${parseFloat(balance.total).toFixed(4)}</div>
+                                        <div class="text-sm text-gray-400">${parseFloat(balance.locked).toFixed(4)} locked</div>
                                     </div>
                                 `;
                                 balancesList.appendChild(balanceItem);
